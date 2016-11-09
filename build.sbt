@@ -3,6 +3,9 @@ version := "0.0.1"
 
 scalaVersion := "2.12.0"
 test in assembly := {}
+fork := true
+
+mainClass in (Compile, run) := Some("de.m7w3.signal.Main")
 
 // scala specific options
 scalacOptions := Vector(
@@ -14,6 +17,7 @@ scalacOptions := Vector(
 
 libraryDependencies ++= Seq(
   "org.whispersystems"  % "signal-service-java" % "2.3.1",
+  "org.scalafx"         %% "scalafx"            % "8.0.102-R11",
   "org.scalacheck"      %% "scalacheck"         % "1.13.4"  % Test,
   "org.scalatest"       %% "scalatest"          % "3.0.0"   % Test
 )

@@ -16,7 +16,8 @@ scalacOptions := Vector(
 )
 
 libraryDependencies ++= Seq(
-  "org.whispersystems"  % "signal-service-java" % "2.3.1",
+  "org.whispersystems"  % "signal-service-java" % "2.4.0",
+  "org.bouncycastle"    % "bcprov-jdk16"        % "1.46",
   "org.scalafx"         %% "scalafx"            % "8.0.102-R11",
   "org.scalacheck"      %% "scalacheck"         % "1.13.4"  % Test,
   "org.scalatest"       %% "scalatest"          % "3.0.0"   % Test

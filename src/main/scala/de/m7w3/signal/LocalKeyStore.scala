@@ -5,12 +5,11 @@ import java.io.InputStream
 import java.security.KeyStore
 
 case class LocalKeyStore() extends TrustStore {
-  val ks = KeyStore.getInstance("JKS")
   def  getKeyStoreInputStream(): InputStream = {
-    getClass().getResource("/whisper.store").openStream()
+    getClass().getResource("/whisper.store2").openStream()
   }
 
   def getKeyStorePassword(): String = {
-    "foo"
+    "whisper"
   }
 }

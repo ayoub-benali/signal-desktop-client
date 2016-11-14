@@ -9,6 +9,7 @@ import scalafx.scene.control.{Label, Button, TextField}
 import scalafx.scene.layout.StackPane
 import javafx.scene.layout.VBox
 import scalafx.event.ActionEvent
+import java.security.Security
 
 object Step1 extends VBox{
   this.alignment = Pos.Center
@@ -32,6 +33,10 @@ object Step2 extends VBox{
   ok.onAction = (a: ActionEvent) => {
     Step2.setVisible(false)
     Step3.setVisible(true)
+    // TODO: trigger the QR code generation
+    val result = QRCodeGenerator.generate(deviceName.getText)
+
+    println(result)
   }
   this.children = List(device, deviceName, ok)
 }
@@ -45,7 +50,7 @@ object Step3 extends VBox{
 }
 
 object Main extends JFXApp {
-
+  Security.insertProviderAt(new org.bouncycastle.jce.provider.BouncyCastleProvider(), 1)
   stage = new PrimaryStage {
     title = "Welcome"
     scene = new Scene(800, 600) {
@@ -56,5 +61,26 @@ object Main extends JFXApp {
       stack.getChildren.add(Step3)
       root = stack
     }
+  }
+}
+
+
+object QRCodeGenerator{
+  import java.security.SecureRandom
+  import org.whispersystems.signalservice.internal.util.Base64
+  import org.whispersystems.libsignal.util.KeyHelper
+  import org.whispersystems.signalservice.api.SignalServiceAccountManager
+  import org.whispersystems.signalservice.internal.util.Base64
+  import java.net.URLEncoder
+
+  def generate(deviceName: String) = {
+    val secret = Array[Byte](20)
+    SecureRandom.getInstance("SHA1PRNG").nextBytes(secret)
+    val temporaryPassword = Base64.encodeBytes(secret)
+    val temporaryIdentity = KeyHelper.generateIdentityKeyPair()
+    val accountManager = new SignalServiceAccountManager(Constants.URL, LocalKeyStore(), null, temporaryPassword, Constants.USER_AGENT)
+    val deviceID = URLEncoder.encode(accountManager.getNewDeviceVerificationCode(), "UTF-8")
+    val publicKey = URLEncoder.encode(Base64.encodeBytesWithoutPadding(temporaryIdentity.getPublicKey().serialize()), "UTF-8")
+    val qrString = s"tsdevice:/?uuid=$deviceID&pub_key=$publicKey"
   }
 }

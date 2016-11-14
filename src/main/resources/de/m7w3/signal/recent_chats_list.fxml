@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ButtonBar?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.m7w3.signal.controller.ChatsListController">
+   <top>
+      <MenuBar fx:id="mainMenu">
+        <menus>
+          <fx:include fx:id="fileMenu" source="file_menu.fxml"/>
+          <fx:include fx:id="editMenu" source="edit_menu.fxml"/>
+          <fx:include fx:id="helpMenu" source="help_menu.fxml"/>
+        </menus>
+      </MenuBar>
+   </top>
+   <center>
+      <ScrollPane hbarPolicy="NEVER" vbarPolicy="ALWAYS" BorderPane.alignment="CENTER">
+         <content>
+            <ListView fx:id="chatsList" />
+         </content>
+      </ScrollPane>
+   </center>
+   <bottom>
+      <ButtonBar id="chatsListbuttonBar" fx:id="chatsListButtonBar" prefHeight="40.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+        <buttons>
+          <Button id="newChatBtn" fx:id="newChatBtn" mnemonicParsing="false" onAction="#onNewChat" text="New Chat" />
+        </buttons>
+         <BorderPane.margin>
+            <Insets />
+         </BorderPane.margin>
+         <padding>
+            <Insets left="5.0" right="5.0" />
+         </padding>
+      </ButtonBar>
+   </bottom>
+</BorderPane>

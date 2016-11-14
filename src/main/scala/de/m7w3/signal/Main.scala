@@ -1,12 +1,18 @@
 package de.m7w3.signal
 
+import javafx.scene.layout.VBox
+
+import scopt.OptionParser
+
 import scalafx.Includes._
 import scalafx.application.JFXApp
 import scalafx.application.JFXApp.PrimaryStage
+import scalafx.event.ActionEvent
 import scalafx.geometry.Pos
 import scalafx.scene._
-import scalafx.scene.control.{Label, Button, TextField}
+import scalafx.scene.control.{Button, Label, TextField}
 import scalafx.scene.layout.StackPane
+import scalafxml.core.{DependenciesByType, FXMLView, NoDependencyResolver}
 import javafx.scene.layout.VBox
 import scalafx.event.ActionEvent
 import java.security.Security
@@ -51,9 +57,28 @@ object Step3 extends VBox{
 
 object Main extends JFXApp {
   Security.insertProviderAt(new org.bouncycastle.jce.provider.BouncyCastleProvider(), 1)
-  stage = new PrimaryStage {
-    title = "Welcome"
-    scene = new Scene(800, 600) {
+  val APP_NAME = "signal-desktop"
+  val VERSION = "0.0.1"
+
+  case class SignalDeskTopConfig(fxml: Boolean = true, verbose: Boolean = false)
+
+  val optionParser = new OptionParser[SignalDeskTopConfig](APP_NAME) {
+    head(APP_NAME, VERSION)
+    opt[Unit]("verbose").action( (_, c) =>
+      c.copy(verbose = true) ).text("provide verbose output on console")
+
+    opt[Unit]("fxml").action( (_, c) =>
+      c.copy(fxml = true) ).text("launch fxml ui")
+  }
+  val signalDesktopConfig = optionParser.parse(parameters.raw, SignalDeskTopConfig())
+
+  val primaryScene = if (signalDesktopConfig.exists(_.fxml)) {
+    val lxmlUri = getClass.getResource("/de/m7w3/signal/recent_chats_list.fxml")
+    require(lxmlUri != null, "lxmlUri not found")
+    val root = FXMLView(lxmlUri, new DependenciesByType(Map.empty))
+    new Scene(root)
+  } else {
+    new Scene(800, 600) {
       val stack = new StackPane
       stack.alignment = Pos.Center
       stack.getChildren.add(Step1)
@@ -62,8 +87,18 @@ object Main extends JFXApp {
       root = stack
     }
   }
-}
 
+  stage = new PrimaryStage {
+    title = "Welcome"
+    scene = primaryScene
+  }
+
+  override def stopApp(): Unit = {
+    // cleanup shit
+    println("bye!")
+    super.stopApp()
+  }
+}
 
 object QRCodeGenerator{
   import java.security.SecureRandom

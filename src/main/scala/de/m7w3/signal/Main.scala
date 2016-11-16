@@ -1,10 +1,9 @@
 package de.m7w3.signal
 
-import javafx.scene.layout.VBox
-
 import scopt.OptionParser
 
 import scalafx.Includes._
+import javafx.scene.layout.VBox
 import scalafx.application.JFXApp
 import scalafx.application.JFXApp.PrimaryStage
 import scalafx.event.ActionEvent
@@ -13,11 +12,12 @@ import scalafx.scene._
 import scalafx.scene.control.{Button, Label, TextField}
 import scalafx.scene.layout.StackPane
 import scalafxml.core.{DependenciesByType, FXMLView, NoDependencyResolver}
-import javafx.scene.layout.VBox
 import scalafx.event.ActionEvent
 import java.security.Security
 
-object Step1 extends VBox{
+import org.whispersystems.libsignal.logging.SignalProtocolLoggerProvider
+
+object Step1 extends VBox {
   this.alignment = Pos.Center
   private val hello = new Label("Hello")
   private val appRequired = new Label("You must have Signal for Android for using this client")
@@ -29,7 +29,7 @@ object Step1 extends VBox{
   this.children = List(hello, appRequired, haveApp)
 }
 
-object Step2 extends VBox{
+object Step2 extends VBox {
   Step2.setVisible(false)
   this.alignment = Pos.Center
   private val device = new Label("Enter a name for this device:")
@@ -57,6 +57,7 @@ object Step3 extends VBox{
 
 object Main extends JFXApp {
   Security.insertProviderAt(new org.bouncycastle.jce.provider.BouncyCastleProvider(), 1)
+  SignalProtocolLoggerProvider.setProvider(new ProtocolLogger())
   // val APP_NAME = "signal-desktop"
   // val VERSION = "0.0.1"
 

@@ -6,7 +6,7 @@ import java.security.KeyStore
 
 case class LocalKeyStore() extends TrustStore {
   def  getKeyStoreInputStream(): InputStream = {
-    getClass().getResource("/whisper.store2").openStream()
+    getClass().getResource("/de/m7w3/signal/whisper.store").openStream()
   }
 
   def getKeyStorePassword(): String = {

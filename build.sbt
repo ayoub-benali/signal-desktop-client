@@ -35,6 +35,8 @@ libraryDependencies ++= Seq(
   "junit"                     % "junit"                % "4.12"         % Test,
   "org.testfx"                % "testfx-core"          % "4.0.4-alpha"  % Test,
   "org.testfx"                % "testfx-junit"         % "4.0.4-alpha"  % Test,
+  "org.slf4j"                 % "slf4j-api"            % "1.7.21",
+  "org.apache.logging.log4j"  % "log4j-slf4j-impl"     % "2.7",
   "org.apache.logging.log4j"  % "log4j-api"            % "2.7",
   "org.apache.logging.log4j"  % "log4j-core"           % "2.7"
 )

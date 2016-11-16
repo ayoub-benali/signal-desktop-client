@@ -24,7 +24,8 @@ scalacOptions := Vector(
 addCompilerPlugin("org.scalamacros" %% "paradise" % "2.1.0" cross CrossVersion.full)
 
 libraryDependencies ++= Seq(
-  "org.whispersystems"        % "signal-service-java"  % "2.4.0",
+  "com.github.turasa"         % "signal-service-java"  % "2.4.0_unofficial_1",
+  //"org.whispersystems"        % "signal-service-java"  % "2.4.0",
   "org.bouncycastle"          % "bcprov-jdk16"         % "1.46",
   "com.github.scopt"          %% "scopt"               % "3.5.0",
   "org.scalafx"               %% "scalafx"             % "8.0.102-R11",

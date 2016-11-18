@@ -1,7 +1,8 @@
 name := "signal-desktop-client"
 version := "0.0.1"
 
-scalaVersion := "2.12.0"
+scalaVersion := "2.11.8"
+scalaVersion in ThisBuild := "2.11.8"
 test in assembly := {}
 fork := true
 
@@ -23,8 +24,11 @@ scalacOptions := Vector(
 // needed for scalafxml
 addCompilerPlugin("org.scalamacros" %% "paradise" % "2.1.0" cross CrossVersion.full)
 
+resolvers += "jitpack" at "https://jitpack.io"
+
 libraryDependencies ++= Seq(
-  "org.whispersystems"        % "signal-service-java"  % "2.4.0",
+  "com.github.turasa"         % "signal-service-java"  % "2.4.0_unofficial_1",
+  "com.github.kenglxn.QRGen"  % "javase"               % "2.2.0",
   "org.bouncycastle"          % "bcprov-jdk16"         % "1.46",
   "com.github.scopt"          %% "scopt"               % "3.5.0",
   "org.scalafx"               %% "scalafx"             % "8.0.102-R11",

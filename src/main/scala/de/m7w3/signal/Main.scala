@@ -1,12 +1,8 @@
 package de.m7w3.signal
 
-import java.net.URLEncoder
-import java.security.SecureRandom
+
 import java.security.Security
 import org.whispersystems.libsignal.logging.SignalProtocolLoggerProvider
-import org.whispersystems.libsignal.util.KeyHelper
-import org.whispersystems.signalservice.api.SignalServiceAccountManager
-import org.whispersystems.signalservice.internal.util.Base64
 import scalafx.application.JFXApp
 import scalafx.application.JFXApp.PrimaryStage
 import scalafx.geometry.Pos
@@ -18,6 +14,9 @@ import scopt.OptionParser
 object Main extends JFXApp {
   Security.insertProviderAt(new org.bouncycastle.jce.provider.BouncyCastleProvider(), 1)
   SignalProtocolLoggerProvider.setProvider(new ProtocolLogger())
+
+  var account: AccountHelper = _
+
   // val APP_NAME = "signal-desktop"
   // val VERSION = "0.0.1"
 
@@ -57,19 +56,5 @@ object Main extends JFXApp {
     // cleanup shit
     println("bye!")
     super.stopApp()
-  }
-}
-
-object QRCodeGenerator{
-  def generate(deviceName: String, deviceId: String): String = {
-    val secret = Array[Byte](20)
-    SecureRandom.getInstance("SHA1PRNG").nextBytes(secret)
-    val temporaryPassword = Base64.encodeBytes(secret)
-    val temporaryIdentity = KeyHelper.generateIdentityKeyPair()
-    val accountManager = new SignalServiceAccountManager(Constants.URL, LocalKeyStore(), deviceId, temporaryPassword, Constants.USER_AGENT)
-    val deviceID = URLEncoder.encode(accountManager.getNewDeviceUuid(), "UTF-8")
-    val publicKey = URLEncoder.encode(Base64.encodeBytesWithoutPadding(temporaryIdentity.getPublicKey().serialize()), "UTF-8")
-    val qrString = s"tsdevice:/?uuid=$deviceID&pub_key=$publicKey"
-    qrString
   }
 }

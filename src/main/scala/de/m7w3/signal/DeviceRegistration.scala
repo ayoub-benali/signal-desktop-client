@@ -1,7 +1,6 @@
 package de.m7w3.signal
 
 import java.io.ByteArrayInputStream
-import net.glxn.qrgen.javase.QRCode
 import scalafx.application.Platform
 import scalafx.event.ActionEvent
 import scalafx.event.ActionEvent
@@ -44,8 +43,8 @@ package object Registration{
       Step2.setVisible(false)
       Step3.setVisible(true)
       Platform.runLater{
-        val url = QRCodeGenerator.generate(deviceName.getText, userId.getText)
-        val outputstream = QRCode.from(url).stream
+        Main.account = AccountHelper(userId.getText())
+        val outputstream = QRCodeGenerator.generate(() => Main.account.getNewDeviceURL)
         val image = new Image(new ByteArrayInputStream(outputstream.toByteArray))
         val backgroundImage = new BackgroundImage(image, BackgroundRepeat.NoRepeat, BackgroundRepeat.NoRepeat, BackgroundPosition.Center, BackgroundSize.Default)
         Step3.qrCode.setBackground(new Background(Array(backgroundImage)))
@@ -61,8 +60,6 @@ package object Registration{
     val qrCode = new StackPane
     qrCode.prefWidth = 300D
     qrCode.prefHeight = 300D
-
     this.children = List(qrCode, label)
   }
-
 }

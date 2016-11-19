@@ -3,7 +3,7 @@ package de.m7w3.signal
 import org.whispersystems.signalservice.api.push.TrustStore
 import java.io.InputStream
 
-case class LocalKeyStore() extends TrustStore {
+object LocalKeyStore extends TrustStore {
   def  getKeyStoreInputStream(): InputStream = {
     getClass().getResource("/de/m7w3/signal/whisper.store").openStream()
   }

@@ -42,8 +42,8 @@ package object Registration{
     ok.onAction = (a: ActionEvent) => {
       Step2.setVisible(false)
       Step3.setVisible(true)
+      Main.account = AccountHelper(userId.getText())
       Platform.runLater{
-        Main.account = AccountHelper(userId.getText())
         val outputstream = QRCodeGenerator.generate(() => Main.account.getNewDeviceURL)
         val image = new Image(new ByteArrayInputStream(outputstream.toByteArray))
         val backgroundImage = new BackgroundImage(image, BackgroundRepeat.NoRepeat, BackgroundRepeat.NoRepeat, BackgroundPosition.Center, BackgroundSize.Default)
@@ -58,8 +58,13 @@ package object Registration{
     this.alignment = Pos.Center
     private val label = new Label("Open Signal on your phone and go to Settings > Devices. Click on the plus icon and scan the above QR code.")
     val qrCode = new StackPane
-    qrCode.prefWidth = 300D
-    qrCode.prefHeight = 300D
-    this.children = List(qrCode, label)
+    qrCode.prefWidth = 600D
+    qrCode.prefHeight = 600D
+    val finish = new Button("Finish")
+    finish.onAction = (a: ActionEvent) => {
+      Platform.runLater{Main.account.finishDeviceLink(Step2.deviceName.getText())}
+    }
+
+    this.children = List(qrCode, label, finish)
   }
 }

@@ -27,6 +27,6 @@ object Addresses {
   val addresses = TableQuery[Addresses]
 
   def upsert(address: SignalProtocolAddress) = {
-    (addresses returning addresses).insertOrUpdate(Address(address))
+    addresses.insertOrUpdate(Address(address))
   }
 }

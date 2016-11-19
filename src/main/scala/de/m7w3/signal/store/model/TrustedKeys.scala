@@ -10,7 +10,7 @@ class TrustedKeys(tag: Tag) extends Table[(Int, Array[Byte], Int)](tag, "TRUSTED
   def pubKey = column[Array[Byte]]("PUB_KEY")
   def addressId = column[Int]("ADDRESS_ID")
 
-  def address = foreignKey("ADDRESS_FK", addressId, Addresses.addresses)(_.id)
+  def address = foreignKey("TRUSTED_KEYS_ADDRESS_FK", addressId, Addresses.addresses)(_.id)
 
   override def * = (id, pubKey, addressId)
 }

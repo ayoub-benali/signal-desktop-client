@@ -21,7 +21,7 @@ class Sessions(tag: Tag) extends Table[Session](tag, "SESSIONS") {
   def addressId = column[Int]("ADDRESS_ID")
   def record = column[Array[Byte]]("RECORD")
 
-  def address = foreignKey("ADDRESS_FK", addressId, Addresses.addresses)(_.id)
+  def address = foreignKey("SESSIONS_ADDRESS_FK", addressId, Addresses.addresses)(_.id)
 
   override def * = (id.?, record, addressId) <> (
     Session.tupled,

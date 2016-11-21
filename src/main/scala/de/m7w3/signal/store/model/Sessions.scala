@@ -58,8 +58,11 @@ object Sessions {
   }
 
   def deleteByRemoteClientName(name: String) = {
-    val join = sessions join Addresses.addresses on (_.addressId === _.id)
-    join.filter(_._2.name === name).map(_._1).delete
+    // TODO: delete of joined query not working
+    sessions.filter(session => { session.addressId in (
+        session.address filter { _.name === name } map { _.id }
+      )
+    }).delete
   }
 
   def getSessionDevices(remoteClientName: String) = {

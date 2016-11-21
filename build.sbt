@@ -1,7 +1,7 @@
 name := "signal-desktop-client"
 version := "0.0.1"
 
-scalaVersion := "2.12.0"
+scalaVersion := "2.11.8"
 test in assembly := {}
 fork := true
 
@@ -39,5 +39,7 @@ libraryDependencies ++= Seq(
   "org.slf4j"                 % "slf4j-api"            % "1.7.21",
   "org.apache.logging.log4j"  % "log4j-slf4j-impl"     % "2.7",
   "org.apache.logging.log4j"  % "log4j-api"            % "2.7",
-  "org.apache.logging.log4j"  % "log4j-core"           % "2.7"
+  "org.apache.logging.log4j"  % "log4j-core"           % "2.7",
+  "com.h2database"            % "h2"                   % "1.4.193",
+  "com.typesafe.slick"        %% "slick"               % "3.1.1"
 )

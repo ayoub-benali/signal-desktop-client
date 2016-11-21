@@ -5,7 +5,6 @@ import org.whispersystems.libsignal.logging.SignalProtocolLogger
 import org.slf4j.LoggerFactory
 class ProtocolLogger extends SignalProtocolLogger {
 
-
   private val logger = LoggerFactory.getLogger(getClass)
 
   override def log(priority: Int, tag: String, message: String): Unit = {

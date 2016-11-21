@@ -96,3 +96,5 @@ project/plugins/project/
 .ensime
 
 *.orig
+
+/travis/dependencies/

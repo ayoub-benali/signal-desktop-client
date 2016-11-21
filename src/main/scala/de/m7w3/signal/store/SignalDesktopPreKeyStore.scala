@@ -12,10 +12,8 @@ case class SignalDesktopPreKeyStore(dbRunner: DBActionRunner) extends PreKeyStor
   }
 
   override def loadPreKey(preKeyId: Int): PreKeyRecord = {
-    dbRunner.run(PreKeys.get(preKeyId)) match {
-      case Some(preKey) => preKey
-      case None => throw new InvalidKeyIdException(s"no preKey found for id $preKeyId")
-    }
+    dbRunner.run(PreKeys.get(preKeyId))
+      .getOrElse(throw new InvalidKeyIdException(s"no preKey found for id $preKeyId"))
   }
 
   override def removePreKey(preKeyId: Int): Unit = {

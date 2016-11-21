@@ -45,11 +45,13 @@ object Sessions {
   def upsert(address: SignalProtocolAddress, record: SessionRecord) = {
     implicit val ec = ExecutionContext.global
     val addressId = address.hashCode()
-    (
-      for {
-        _ <- Addresses.upsert(address) // ensure address is stored
-        _ <- sessions.insertOrUpdate(Session(None, record.serialize(), addressId))
-      } yield ()).transactionally
+
+    val query = for {
+      _ <- Addresses.upsert(address) // ensure address is stored
+      _ <- sessions.insertOrUpdate(Session(None, record.serialize(), addressId))
+    } yield ()
+
+    query.transactionally
   }
 
   def delete(address: SignalProtocolAddress) = {

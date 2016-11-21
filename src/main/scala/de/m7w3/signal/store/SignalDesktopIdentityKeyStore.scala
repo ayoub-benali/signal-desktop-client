@@ -23,11 +23,14 @@ case class SignalDesktopIdentityKeyStore(dbRunner: DBActionRunner) extends Ident
 
 
   private def loadIdentity(): Identity = {
-    if (identity.isEmpty) {
-      val loadedId = dbRunner.run(LocalIdentity.localIdentity)
-      identity = Some(loadedId)
+    identity match {
+      case Some(id) => id
+      case _ => {
+        val loadedId = dbRunner.run(LocalIdentity.localIdentity)
+        identity = Some(loadedId)
+        loadedId
+      }
     }
-    identity.get
   }
 
   override def getIdentityKeyPair: IdentityKeyPair = {
@@ -44,11 +47,12 @@ case class SignalDesktopIdentityKeyStore(dbRunner: DBActionRunner) extends Ident
   }
 
   override def saveIdentity(address: SignalProtocolAddress, identityKey: IdentityKey): Unit = {
-    val saveAction = ( for {
-      _ <- Addresses.upsert(address) // make sure it is stored
-      _ <- TrustedKeys.upsert(address, identityKey)
-    } yield () ).transactionally
-    dbRunner.run(saveAction)
+    val saveAction = for {
+        _ <- Addresses.upsert(address) // make sure it is stored
+        _ <- TrustedKeys.upsert(address, identityKey)
+      } yield ()
+
+    dbRunner.run(saveAction.transactionally)
     ()
   }
 }

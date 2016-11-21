@@ -1,10 +1,5 @@
 package de.m7w3.signal.store
 
-object Directories {
-
-
-}
-
 object XDGDirectories {
   val HOME = sys.env("HOME")
 
@@ -14,7 +9,6 @@ object XDGDirectories {
 
   val XDG_CONFIG_HOME_VAR = "XDG_CONFIG_HOME"
   val XDG_CONFIG_HOME_DEFAULT = s"$HOME/.local/share"
-  
 
   // $XDG_DATA_HOME -> $HOME/.local/share
   // $XDG_DATA_DIRS -> /usr/local/share/:/usr/share/

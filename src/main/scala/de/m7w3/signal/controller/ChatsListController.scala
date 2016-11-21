@@ -2,7 +2,7 @@ package de.m7w3.signal.controller
 
 import scalafx.Includes._
 import scalafx.event.ActionEvent
-import scalafx.scene.control.{Button, ButtonBar, Menu}
+import scalafx.scene.control.{Button, ButtonBar}
 import scalafx.scene.layout.AnchorPane
 import scalafxml.core.macros.{nested, sfxml}
 
@@ -31,6 +31,4 @@ class ChatsListController(
     pane.children.add(btn)
     scene.setRoot(pane)
   }
-
-
 }

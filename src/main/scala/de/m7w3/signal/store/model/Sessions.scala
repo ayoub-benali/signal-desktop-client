@@ -34,7 +34,7 @@ object Sessions {
 
   def get(address: SignalProtocolAddress) = {
     val addressId = address.hashCode()
-    sessions.filter(_.addressId === addressId).result.head
+    sessions.filter(_.addressId === addressId).result.headOption
   }
 
   def exists(address: SignalProtocolAddress) = {

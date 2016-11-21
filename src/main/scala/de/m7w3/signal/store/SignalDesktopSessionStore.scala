@@ -13,7 +13,9 @@ case class SignalDesktopSessionStore(dbRunner: DBActionRunner) extends SessionSt
   }
 
   override def loadSession(address: SignalProtocolAddress): SessionRecord = {
-    dbRunner.run(Sessions.get(address)).record
+    dbRunner.run(Sessions.get(address)).map(_.record).getOrElse(
+      new SessionRecord()
+    )
   }
 
   override def storeSession(address: SignalProtocolAddress, record: SessionRecord): Unit = {

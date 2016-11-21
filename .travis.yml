@@ -1,0 +1,15 @@
+sudo: false
+language: scala
+scala:
+   - 2.11.8
+script:
+  make -c travis test
+addons:
+  apt:
+    packages:
+      - oracle-java8-installer
+      - make
+
+cache:
+  directories:
+    - travis/dependencies

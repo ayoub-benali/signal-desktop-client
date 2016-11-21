@@ -1,6 +1,7 @@
 package de.m7w3.signal.store
 
 import de.m7w3.signal.store.model.PreKeys
+import org.whispersystems.libsignal.InvalidKeyIdException
 import org.whispersystems.libsignal.state.{PreKeyRecord, PreKeyStore}
 import slick.driver.H2Driver.api._
 
@@ -11,7 +12,10 @@ case class SignalDesktopPreKeyStore(dbRunner: DBActionRunner) extends PreKeyStor
   }
 
   override def loadPreKey(preKeyId: Int): PreKeyRecord = {
-    dbRunner.run(PreKeys.get(preKeyId))
+    dbRunner.run(PreKeys.get(preKeyId)) match {
+      case Some(preKey) => preKey
+      case None => throw new InvalidKeyIdException(s"no preKey found for id $preKeyId")
+    }
   }
 
   override def removePreKey(preKeyId: Int): Unit = {

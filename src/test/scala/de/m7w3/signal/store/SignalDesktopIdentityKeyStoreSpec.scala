@@ -8,8 +8,8 @@ class SignalDesktopIdentityKeyStoreSpec extends FlatSpec with Matchers with Befo
 
 
   it should "fail if not initialized" in {
-    an [NoSuchElementException] should be thrownBy protocolStore.getIdentityKeyPair
-    an [NoSuchElementException] should be thrownBy protocolStore.getLocalRegistrationId
+    a [NoSuchElementException] should be thrownBy protocolStore.getIdentityKeyPair
+    a [NoSuchElementException] should be thrownBy protocolStore.getLocalRegistrationId
   }
 
   it should "return always the same local identity data after initialization" in {

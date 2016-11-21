@@ -22,7 +22,7 @@ object PreKeys {
   }
 
   def get(keyId: Int) = {
-    PreKeys.preKeys.filter(_.id === keyId).result.head
+    PreKeys.preKeys.filter(_.id === keyId).result.headOption
   }
 
   def delete(keyId: Int) = {

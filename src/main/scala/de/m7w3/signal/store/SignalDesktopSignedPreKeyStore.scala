@@ -7,6 +7,7 @@ import org.whispersystems.libsignal.InvalidKeyIdException
 import org.whispersystems.libsignal.state.{SignedPreKeyRecord, SignedPreKeyStore}
 
 case class SignalDesktopSignedPreKeyStore(dbRunner: DBActionRunner) extends SignedPreKeyStore {
+
   override def storeSignedPreKey(signedPreKeyId: Int, record: SignedPreKeyRecord): Unit = {
     dbRunner.run(SignedPreKeys.upsert(signedPreKeyId, record))
     ()

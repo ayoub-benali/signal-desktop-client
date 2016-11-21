@@ -14,9 +14,9 @@ case class SignalDesktopSignedPreKeyStore(dbRunner: DBActionRunner) extends Sign
   }
 
   override def loadSignedPreKey(signedPreKeyId: Int): SignedPreKeyRecord = {
-    dbRunner.run(SignedPreKeys.get(signedPreKeyId)).getOrElse({
+    dbRunner.run(SignedPreKeys.get(signedPreKeyId)).getOrElse(
       throw new InvalidKeyIdException("no corresponding SignedPreKeyRecord")
-    }).key
+    ).key
   }
 
   override def loadSignedPreKeys(): util.List[SignedPreKeyRecord] = {

@@ -17,4 +17,5 @@ cache:
 
 env:
   - USE_FRAMEBUFFER=false
+  # run stuff in headless mode
   - _JAVA_OPTIONS="-Djava.awt.headless=true -Dtestfx.robot=glass -Dtestfx.headless=true -Dprism.order=sw -Dprism.text=t2k -Dtestfx.setup.timeout=2500"

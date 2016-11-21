@@ -4,11 +4,11 @@ import org.whispersystems.signalservice.api.push.TrustStore
 import java.io.InputStream
 
 object LocalKeyStore extends TrustStore {
-  def  getKeyStoreInputStream(): InputStream = {
-    getClass().getResource("/de/m7w3/signal/whisper.store").openStream()
+  def  getKeyStoreInputStream: InputStream = {
+    getClass.getResource("/de/m7w3/signal/whisper.store").openStream()
   }
 
-  def getKeyStorePassword(): String = {
+  def getKeyStorePassword: String = {
     "whisper"
   }
 }

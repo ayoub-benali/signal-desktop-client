@@ -12,6 +12,7 @@ addons:
   apt:
     packages:
       - oracle-java8-installer
+  srcclr: true
 
 script:
   - make -C travis test

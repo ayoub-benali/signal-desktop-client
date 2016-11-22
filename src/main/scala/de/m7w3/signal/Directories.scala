@@ -1,19 +1,12 @@
-package de.m7w3.signal.store
+package de.m7w3.signal
 
-object XDGDirectories {
-  val HOME = sys.env("HOME")
+import java.io.File
 
-  val XDG_DATA_HOME_VAR = "XDG_DATA_HOME"
-  val XDG_DATA_HOME_DEFAULT = s"$HOME/.local/share"
-  val XDG_DATA_HOME = sys.env.getOrElse(XDG_DATA_HOME_VAR, XDG_DATA_HOME_DEFAULT)
+import net.harawata.appdirs.AppDirsFactory
 
-  val XDG_CONFIG_HOME_VAR = "XDG_CONFIG_HOME"
-  val XDG_CONFIG_HOME_DEFAULT = s"$HOME/.local/share"
+object Directories {
+  lazy val defaultProfileDir: File =
+    new File(AppDirsFactory.getInstance().getUserDataDir(App.NAME, App.VERSION, App.AUTHOR))
 
-  // $XDG_DATA_HOME -> $HOME/.local/share
-  // $XDG_DATA_DIRS -> /usr/local/share/:/usr/share/
-  // $XDG_CONFIG_HOME -> $HOME/.config
-  // $XDG_CONFIG_DIRS -> /etc/xdg
-  // $XDG_CACHE_HOME -> $HOME/.cache
-  // $XDG_RUNTIME_DIR -> warn
+
 }

@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/ayoub-benali/signal-desktop-client.svg?branch=master)](https://travis-ci.org/ayoub-benali/signal-desktop-client)
+
 # About
 Native desktop Signal client using Scala FX
 

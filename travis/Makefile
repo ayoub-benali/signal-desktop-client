@@ -1,6 +1,6 @@
 DEPS_DIR="travis/dependencies"
 
-SBT_TRAVIS_TASKS=';clean;test'
+SBT_TRAVIS_TASKS=';clean;clean-files;test'
 
 test: $(DEPS_DIR)
 	cd .. && sbt -Dsbt.ivy.home=${DEPS_DIR}/.ivy2 \

@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/ayoub-benali/signal-desktop-client.svg?branch=master)](https://travis-ci.org/ayoub-benali/signal-desktop-client)
+[![Dependency Status](https://www.versioneye.com/user/projects/583427b0e7cea00045b89101/badge.svg?style=flat-square)](https://www.versioneye.com/user/projects/583427b0e7cea00045b89101)
 
 # About
 Native desktop Signal client using Scala FX

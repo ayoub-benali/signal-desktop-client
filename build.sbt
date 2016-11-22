@@ -6,10 +6,6 @@ scalaVersion in ThisBuild := "2.11.8"
 test in assembly := {}
 fork := true
 
-
-val jfxrtJar = file(System.getenv("JAVA_HOME") + "/jre/lib/ext/jfxrt.jar")
-unmanagedJars in Compile += Attributed.blank(jfxrtJar)
-
 mainClass in (Compile, run) := Some("de.m7w3.signal.Main")
 
 // scala specific options
@@ -18,7 +14,7 @@ scalacOptions := Vector(
   "-Xlint", "-Yno-adapted-args", "-Ywarn-dead-code",
   "-Ywarn-numeric-widen", "-Ywarn-value-discard", "-Ywarn-inaccessible",
   "-Ywarn-nullary-override", "-Ywarn-nullary-unit", "-Ywarn-unused-import",
-  "-Dscala.usejavacp=true"
+  "-Dscala.usejavacp=true", "-Ylog-classpath"
 )
 
 // needed for scalafxml

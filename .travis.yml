@@ -1,22 +1,25 @@
-sudo: false
 language: scala
-jdk: oraclejdk8
+
 scala:
-   - 2.11.8
-script:
-  make -C travis test
+  - 2.11.8
+
+jdk:
+  - oraclejdk8
+
+sudo: false
+
 addons:
   apt:
     packages:
       - oracle-java8-installer
-      - make
+  srcclr: true
+
+script:
+  - make -C travis test
 
 cache:
   directories:
     - travis/dependencies
-
-addons:
-  srcclr: true
 
 env:
   - USE_FRAMEBUFFER=false _JAVA_OPTIONS="-Djava.awt.headless=true -Dtestfx.robot=glass -Dtestfx.headless=true -Dprism.order=sw -Dprism.text=t2k -Dtestfx.setup.timeout=2500"

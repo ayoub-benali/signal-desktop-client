@@ -2,15 +2,12 @@ package de.m7w3.signal
 
 import java.security.Security
 
-import de.m7w3.signal.Registration.{Step1, Step2, Step3}
 import org.whispersystems.libsignal.logging.SignalProtocolLoggerProvider
 
 import scala.reflect.runtime.universe._
 import scalafx.Includes._
 import scalafx.application.JFXApp
 import scalafx.application.JFXApp.PrimaryStage
-import scalafx.geometry.Pos
-import scalafx.scene.layout.StackPane
 import scalafx.scene.{Parent, Scene}
 import scalafxml.core.{DependenciesByType, FXMLView}
 
@@ -36,25 +33,18 @@ object Main extends JFXApp {
       typeOf[ApplicationContext], appContext
     )
 
-    val primaryScene = if (appContext.profileDirExists && appContext.profileIsInitialized) {
+    val root = if (appContext.profileDirExists && appContext.profileIsInitialized) {
       // start chatsList
-      val root = loadFXML("/de/m7w3/signal/recent_chats_list.fxml", dependencies)
-      new Scene(root)
+      loadFXML("/de/m7w3/signal/recent_chats_list.fxml", dependencies)
     } else {
       // TODO: detect and handle error cases
       // show welcome and registration screen
-      new Scene(800, 600) {
-        val stack = new StackPane
-        stack.alignment = Pos.Center
-        stack.getChildren.add(Step1)
-        stack.getChildren.add(Step2)
-        stack.getChildren.add(Step3)
-        root = stack
-      }
+      Registration.load()
     }
+
     stage = new PrimaryStage {
       title = "Welcome"
-      scene = primaryScene
+      scene = new Scene(root)
     }
   }
 

@@ -10,6 +10,7 @@ import scalafx.geometry.Pos
 import scalafx.scene.control.{Button, Label, TextField}
 import scalafx.scene.image.Image
 import scalafx.scene.layout.{VBox, StackPane, BackgroundSize, BackgroundRepeat, BackgroundPosition, BackgroundImage, Background}
+import scalafx.scene.Parent
 
 package object Registration{
 
@@ -61,5 +62,12 @@ package object Registration{
     }
 
     this.children = List(qrCode, label, finish)
+  }
+
+  def load(): Parent = {
+    val stack = new StackPane
+    stack.alignment = Pos.Center
+    stack.children = List(Step1, Step2, Step3)
+    stack
   }
 }

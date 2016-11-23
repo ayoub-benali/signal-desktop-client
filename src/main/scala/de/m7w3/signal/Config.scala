@@ -2,7 +2,6 @@ package de.m7w3.signal
 
 import java.io.File
 
-import de.m7w3.signal.store.Directories
 import scopt.OptionParser
 
 import scala.annotation.tailrec

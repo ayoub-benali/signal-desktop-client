@@ -1,6 +1,6 @@
 package de.m7w3.signal.store
 
-import de.m7w3.signal.store.model.Identity
+
 import org.scalatest.{BeforeAndAfterEach, Suite}
 import org.whispersystems.libsignal.SignalProtocolAddress
 

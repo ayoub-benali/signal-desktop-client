@@ -30,7 +30,7 @@ object Main extends JFXApp {
     val appContext = ApplicationContext(config)
 
     val dependencies = Map[Type, Any](
-      typeOf[ApplicationContext], appContext
+      typeOf[ApplicationContext] -> appContext
     )
 
     val root = if (appContext.profileDirExists && appContext.profileIsInitialized) {

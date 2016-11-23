@@ -79,6 +79,18 @@ case class SignalDesktopProtocolStore(dbRunner: DBActionRunner) extends SignalPr
   def getPreKeyIdOffset(): Int = {
     ???
   }
+
+  def storeNextSignedPreKeyId(id: Int): Unit = {
+    ???
+  }
+
+  def getNextSignedPreKeyId(): Int = {
+    ???
+  }
+
+  def save(userName: String, deviceId: Int, password: String, signalingKey: String, preKeyIdOffset: Int, nextSignedPreKeyId: Int): Unit = {
+    ???
+  }
 }
 
 object SignalDesktopProtocolStore{

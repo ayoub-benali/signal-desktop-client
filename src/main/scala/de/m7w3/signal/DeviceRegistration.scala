@@ -1,20 +1,15 @@
 package de.m7w3.signal
 
 import java.io.ByteArrayInputStream
+
+import de.m7w3.signal.store.SignalDesktopProtocolStore
+import scalafx.Includes._
 import scalafx.application.Platform
 import scalafx.event.ActionEvent
-import scalafx.event.ActionEvent
 import scalafx.geometry.Pos
-import scalafx.Includes._
 import scalafx.scene.control.{Button, Label, TextField}
 import scalafx.scene.image.Image
-import scalafx.scene.layout.Background
-import scalafx.scene.layout.BackgroundImage
-import scalafx.scene.layout.BackgroundPosition
-import scalafx.scene.layout.BackgroundRepeat
-import scalafx.scene.layout.BackgroundSize
-import scalafx.scene.layout.StackPane
-import scalafx.scene.layout.VBox
+import scalafx.scene.layout.{VBox, StackPane, BackgroundSize, BackgroundRepeat, BackgroundPosition, BackgroundImage, Background}
 
 package object Registration{
 
@@ -42,7 +37,7 @@ package object Registration{
     ok.onAction = (a: ActionEvent) => {
       Step2.setVisible(false)
       Step3.setVisible(true)
-      Main.account = AccountHelper(userId.getText())
+      Main.account = AccountHelper(userId.getText(), SignalDesktopProtocolStore.getOrCreate)
       Platform.runLater{
         val outputstream = QRCodeGenerator.generate(() => Main.account.getNewDeviceURL)
         val image = new Image(new ByteArrayInputStream(outputstream.toByteArray), 600D, 600D, true, true)

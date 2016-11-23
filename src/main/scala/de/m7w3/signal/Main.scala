@@ -1,6 +1,5 @@
 package de.m7w3.signal
 
-
 import java.security.Security
 import org.whispersystems.libsignal.logging.SignalProtocolLoggerProvider
 import scalafx.application.JFXApp
@@ -16,7 +15,6 @@ object Main extends JFXApp {
   SignalProtocolLoggerProvider.setProvider(new ProtocolLogger())
 
   var account: AccountHelper = _
-  val store = SignalDesktopProtocolStore.getOrCreate
   // val APP_NAME = "signal-desktop"
   // val VERSION = "0.0.1"
 

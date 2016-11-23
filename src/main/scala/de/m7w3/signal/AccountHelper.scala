@@ -3,7 +3,7 @@ package de.m7w3.signal
 import java.net.URLEncoder
 import java.security.InvalidKeyException
 
-import scala.util.{Try, Success, Failure}
+import scala.util.{Try, Success}
 
 import de.m7w3.signal.store.SignalDesktopProtocolStore
 import org.whispersystems.libsignal.IdentityKeyPair
@@ -39,17 +39,7 @@ case class AccountHelper(userId: String, store: SignalDesktopProtocolStore){
       refreshPreKeys()
       // requestSyncGroups();
       // requestSyncContacts();
-      // TODO: store preKeyIdOffset
-      save(username, deviceId, password, signalingKey)
-  }
-
-  def save(userName: String, deviceId: Int, password: String, signalingKey: String): Unit = {
-      // put("username", username)
-      // .put("deviceId", deviceId)
-      // .put("password", password)
-      // .put("signalingKey", signalingKey)
-      // .put("preKeyIdOffset", preKeyIdOffset)
-      // .put("nextSignedPreKeyId", nextSignedPreKeyId)
+      store.save(username, deviceId, password, signalingKey, preKeyIdOffset, nextSignedPreKeyId)
   }
 
   def refreshPreKeys(): Unit = {
@@ -79,12 +69,11 @@ case class AccountHelper(userId: String, store: SignalDesktopProtocolStore){
   def getOrGenerateLastResortPreKey(): PreKeyRecord = {
     Try(store.containsPreKey(Medium.MAX_VALUE)) match {
       case Success(true) => store.loadPreKey(Medium.MAX_VALUE)
-      case Failure(_) => {
+      case _ => {
         store.removePreKey(Medium.MAX_VALUE)
         val keyPair = Curve.generateKeyPair()
         val record = new PreKeyRecord(Medium.MAX_VALUE, keyPair)
         store.storePreKey(Medium.MAX_VALUE, record)
-        // TODO: save()
         record
       }
     }
@@ -98,7 +87,7 @@ case class AccountHelper(userId: String, store: SignalDesktopProtocolStore){
 
       store.storeSignedPreKey(nextSignedPreKeyId, record);
       nextSignedPreKeyId = (nextSignedPreKeyId + 1) % Medium.MAX_VALUE
-      // TODO: save()
+      store.storeNextSignedPreKeyId(nextSignedPreKeyId)
       record
     } catch {
       case e: InvalidKeyException => throw new AssertionError(e)

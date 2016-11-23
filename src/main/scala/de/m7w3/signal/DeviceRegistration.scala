@@ -45,7 +45,7 @@ package object Registration{
       Main.account = AccountHelper(userId.getText())
       Platform.runLater{
         val outputstream = QRCodeGenerator.generate(() => Main.account.getNewDeviceURL)
-        val image = new Image(new ByteArrayInputStream(outputstream.toByteArray))
+        val image = new Image(new ByteArrayInputStream(outputstream.toByteArray), 600D, 600D, true, true)
         val backgroundImage = new BackgroundImage(image, BackgroundRepeat.NoRepeat, BackgroundRepeat.NoRepeat, BackgroundPosition.Center, BackgroundSize.Default)
         Step3.qrCode.setBackground(new Background(Array(backgroundImage)))
       }

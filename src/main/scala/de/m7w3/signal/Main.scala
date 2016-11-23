@@ -31,6 +31,7 @@ object Main extends JFXApp {
   val signalDesktopConfig = Config.optionParser.parse(parameters.raw, Config.SignalDesktopConfig())
   signalDesktopConfig.foreach { config =>
     val appContext = ApplicationContext(config)
+
     val dependencies = Map[Type, Any](
       typeOf[ApplicationContext], appContext
     )

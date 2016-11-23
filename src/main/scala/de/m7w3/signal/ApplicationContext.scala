@@ -3,7 +3,7 @@ package de.m7w3.signal
 import java.nio.file.{Path, Paths}
 
 import de.m7w3.signal.exceptions.DatabaseDoesNotExistException
-import de.m7w3.signal.store.model.Identity
+import de.m7w3.signal.store.model.{Identity, Schema}
 import de.m7w3.signal.store.{DBActionRunner, SignalDesktopProtocolStore}
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.core.config.Configurator
@@ -35,6 +35,7 @@ case class ApplicationContext(config: Config.SignalDesktopConfig) {
         logger.error("error creating new protocol store", t)
         throw t
       case Success(dBActionRunner) =>
+        databaseContext.initializeDatabase(dBActionRunner) // initialize
         val store = SignalDesktopProtocolStore(dBActionRunner)
         store.identityKeyStore.initialize(identity)
         store
@@ -43,7 +44,7 @@ case class ApplicationContext(config: Config.SignalDesktopConfig) {
 
   def tryLoadExistingStore(password: String): Try[SignalDesktopProtocolStore] = {
     databaseContext.dbActionRunner(password, onlyIfExists = true)
-      .map(SignalDesktopProtocolStore)
+      .map(SignalDesktopProtocolStore(_))
   }
 }
 
@@ -52,9 +53,9 @@ case class DatabaseContext(config: Config.SignalDesktopConfig) {
   val DB_NAME = "signal-desktop.db"
   val DB_USER = "signal-desktop"
 
-  val CONNECTION_PROPERTIES = Map("CIPHER" -> "AES")
+  val CONNECTION_PROPERTIES: Map[String, String] = Map("CIPHER" -> "AES")
 
-  val LOAD_CONNECTION_PROPERTIES = CONNECTION_PROPERTIES + ("IFEXISTS" -> "TRUE")
+  val LOAD_CONNECTION_PROPERTIES: Map[String, String] = CONNECTION_PROPERTIES + ("IFEXISTS" -> "TRUE")
 
   var database: Option[Database] = None
 
@@ -83,6 +84,12 @@ case class DatabaseContext(config: Config.SignalDesktopConfig) {
         }
       case Some(db) => Success(db)
     }
+  }
+
+  def initializeDatabase(dBActionRunner: DBActionRunner): Unit = {
+    dBActionRunner.run(DBIO.seq(
+      Schema.schema.create
+    ))
   }
 
   def dbActionRunner(password: String, onlyIfExists: Boolean = false): Try[DBActionRunner] = {

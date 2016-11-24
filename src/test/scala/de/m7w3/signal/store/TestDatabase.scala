@@ -1,6 +1,6 @@
 package de.m7w3.signal.store
 
-import de.m7w3.signal.store.model.Schema
+import de.m7w3.signal.store.model.{PreKeys, Schema, SignedPreKeys}
 import org.scalatest.{BeforeAndAfterEach, Suite}
 import slick.driver.H2Driver.api._
 

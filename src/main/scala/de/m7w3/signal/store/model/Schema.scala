@@ -6,7 +6,10 @@ object Schema {
   val schema = Addresses.addresses.schema ++
                LocalIdentity.query.schema ++
                PreKeys.preKeys.schema ++
+               PreKeys.idSequence.schema ++
                Sessions.sessions.schema ++
                SignedPreKeys.signedPreKeys.schema ++
-               TrustedKeys.trustedKeys.schema
+               SignedPreKeys.idSequence.schema ++
+               TrustedKeys.trustedKeys.schema ++
+               RegistrationData.registrationData.schema
 }

@@ -3,13 +3,13 @@ package de.m7w3.signal
 import java.net.URLEncoder
 import java.security.InvalidKeyException
 
-import scala.util.{Try, Success}
-
+import scala.util.{Success, Try}
 import de.m7w3.signal.store.SignalDesktopProtocolStore
+import de.m7w3.signal.store.model.PreKeys
 import org.whispersystems.libsignal.IdentityKeyPair
 import org.whispersystems.libsignal.ecc.Curve
-import org.whispersystems.libsignal.state.{SignedPreKeyRecord, PreKeyRecord}
-import org.whispersystems.libsignal.util.{Medium, KeyHelper}
+import org.whispersystems.libsignal.state.{PreKeyRecord, SignedPreKeyRecord}
+import org.whispersystems.libsignal.util.{KeyHelper, Medium}
 import org.whispersystems.signalservice.api.SignalServiceAccountManager
 import org.whispersystems.signalservice.internal.util.Base64
 
@@ -39,7 +39,7 @@ case class AccountHelper(userId: String, store: SignalDesktopProtocolStore){
       refreshPreKeys()
       // requestSyncGroups();
       // requestSyncContacts();
-      store.save(username, deviceId, password, signalingKey, preKeyIdOffset, nextSignedPreKeyId)
+      store.save(username, deviceId, password, signalingKey)
   }
 
   def refreshPreKeys(): Unit = {
@@ -54,15 +54,12 @@ case class AccountHelper(userId: String, store: SignalDesktopProtocolStore){
 
   def generatePreKeys(): List[PreKeyRecord] = {
     val records = (0 until PREKEY_BATCH_SIZE).map(i => {
-      val preKeyId = (preKeyIdOffset + i) % Medium.MAX_VALUE
+      val preKeyId = store.preKeyStore.incrementAndGetPreKeyId()
       val keyPair = Curve.generateKeyPair()
       val record = new PreKeyRecord(preKeyId, keyPair)
       store.storePreKey(preKeyId, record)
       record
     })
-
-    preKeyIdOffset = (preKeyIdOffset + PREKEY_BATCH_SIZE + 1) % Medium.MAX_VALUE
-    store.storePreKeyIdOffset(preKeyIdOffset)
     records.toList
   }
 

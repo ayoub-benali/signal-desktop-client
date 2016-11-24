@@ -3,7 +3,7 @@ package de.m7w3.signal
 import java.nio.file.{Path, Paths}
 
 import de.m7w3.signal.exceptions.DatabaseDoesNotExistException
-import de.m7w3.signal.store.model.{Identity, Schema}
+import de.m7w3.signal.store.model.{Identity, PreKeys, Schema}
 import de.m7w3.signal.store.{DBActionRunner, SignalDesktopProtocolStore}
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.core.config.Configurator
@@ -87,6 +87,7 @@ case class DatabaseContext(config: Config.SignalDesktopConfig) {
   }
 
   def initializeDatabase(dBActionRunner: DBActionRunner): Unit = {
+
     dBActionRunner.run(DBIO.seq(
       Schema.schema.create
     ))

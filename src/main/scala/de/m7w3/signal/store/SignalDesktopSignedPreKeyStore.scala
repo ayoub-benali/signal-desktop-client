@@ -5,6 +5,7 @@ import java.util
 import de.m7w3.signal.store.model.SignedPreKeys
 import org.whispersystems.libsignal.InvalidKeyIdException
 import org.whispersystems.libsignal.state.{SignedPreKeyRecord, SignedPreKeyStore}
+import slick.driver.H2Driver.api._
 
 case class SignalDesktopSignedPreKeyStore(dbRunner: DBActionRunner) extends SignedPreKeyStore {
 
@@ -31,5 +32,13 @@ case class SignalDesktopSignedPreKeyStore(dbRunner: DBActionRunner) extends Sign
   override def removeSignedPreKey(signedPreKeyId: Int): Unit = {
     dbRunner.run(SignedPreKeys.delete(signedPreKeyId))
     ()
+  }
+
+  def incrementAndGetSignedPreKeyId(): Int = {
+    dbRunner.run(SignedPreKeys.idSequence.next.result)
+  }
+
+  def getSignedPreKeyId: Int = {
+    dbRunner.run(SignedPreKeys.idSequence.curr.result)
   }
 }

@@ -3,7 +3,7 @@ package de.m7w3.signal
 import java.nio.file.{Path, Paths}
 
 import de.m7w3.signal.exceptions.DatabaseDoesNotExistException
-import de.m7w3.signal.store.model.{Identity, PreKeys, Schema}
+import de.m7w3.signal.store.model.Schema
 import de.m7w3.signal.store.{DBActionRunner, SignalDesktopProtocolStore}
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.core.config.Configurator
@@ -29,16 +29,14 @@ case class ApplicationContext(config: Config.SignalDesktopConfig) {
 
   def profileDirExists: Boolean = config.profileDir.exists()
 
-  def createNewProtocolStore(identity: Identity, password: String): SignalDesktopProtocolStore = {
+  def createNewProtocolStore(password: String): SignalDesktopProtocolStore = {
     databaseContext.dbActionRunner(password, onlyIfExists = false) match {
       case Failure(t) =>
         logger.error("error creating new protocol store", t)
         throw t
       case Success(dBActionRunner) =>
         databaseContext.initializeDatabase(dBActionRunner) // initialize
-        val store = SignalDesktopProtocolStore(dBActionRunner)
-        store.identityKeyStore.initialize(identity)
-        store
+        SignalDesktopProtocolStore(dBActionRunner)
     }
   }
 

@@ -80,15 +80,3 @@ case class SignalDesktopProtocolStore(dbRunner: DBActionRunner) extends SignalPr
     ()
   }
 }
-
-object SignalDesktopProtocolStore{
-  def getOrCreate: SignalDesktopProtocolStore = {
-    val database = Database.forURL("jdbc:h2:mem:signal-test;DB_CLOSE_DELAY=-1", driver="org.h2.Driver")
-    val dBActionRunner = DBActionRunner(database, 10.seconds, verbose = true)
-    dBActionRunner.run(DBIO.seq(
-      Schema.schema.create
-    ))
-    // TODO: read DB from file when there
-    SignalDesktopProtocolStore(dBActionRunner)
-  }
-}

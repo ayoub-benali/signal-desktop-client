@@ -22,9 +22,6 @@ object Main extends JFXApp {
   SignalProtocolLoggerProvider.setProvider(new ProtocolLogger())
 
   var account: AccountHelper = _
-  // val APP_NAME = "signal-desktop"
-  // val VERSION = "0.0.1"
-
   val signalDesktopConfig = Config.optionParser.parse(parameters.raw, Config.SignalDesktopConfig())
   signalDesktopConfig.foreach { config =>
     val appContext = ApplicationContext(config)

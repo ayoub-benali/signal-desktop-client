@@ -5,7 +5,6 @@ import java.security.InvalidKeyException
 
 import scala.util.{Success, Try}
 import de.m7w3.signal.store.SignalDesktopProtocolStore
-import de.m7w3.signal.store.model.PreKeys
 import org.whispersystems.libsignal.IdentityKeyPair
 import org.whispersystems.libsignal.ecc.Curve
 import org.whispersystems.libsignal.state.{PreKeyRecord, SignedPreKeyRecord}
@@ -16,8 +15,6 @@ import org.whispersystems.signalservice.internal.util.Base64
 case class AccountHelper(userId: String, store: SignalDesktopProtocolStore){
 
   val PREKEY_BATCH_SIZE = 100
-  var preKeyIdOffset = 0 // TODO: get it from DB
-  var nextSignedPreKeyId = 0 // TODO: same
   // some init to create a SignalServiceAccountManager
   val password = Util.getSecret(20)
   lazy val temporaryIdentity = KeyHelper.generateIdentityKeyPair()
@@ -78,13 +75,13 @@ case class AccountHelper(userId: String, store: SignalDesktopProtocolStore){
 
   def generateSignedPreKey(identityKeyPair: IdentityKeyPair): SignedPreKeyRecord = {
     try {
-      val keyPair = Curve.generateKeyPair();
-      val signature = Curve.calculateSignature(identityKeyPair.getPrivateKey(), keyPair.getPublicKey().serialize());
-      val record = new SignedPreKeyRecord(nextSignedPreKeyId, System.currentTimeMillis(), keyPair, signature);
+      val nextSignedPreKeyId = store.signedPreKeyStore.getSignedPreKeyId
+      val keyPair = Curve.generateKeyPair()
+      val signature = Curve.calculateSignature(identityKeyPair.getPrivateKey(), keyPair.getPublicKey().serialize())
 
-      store.storeSignedPreKey(nextSignedPreKeyId, record);
-      nextSignedPreKeyId = (nextSignedPreKeyId + 1) % Medium.MAX_VALUE
-      store.storeNextSignedPreKeyId(nextSignedPreKeyId)
+      val record = new SignedPreKeyRecord(nextSignedPreKeyId, System.currentTimeMillis(), keyPair, signature)
+      store.storeSignedPreKey(nextSignedPreKeyId, record)
+      store.signedPreKeyStore.incrementAndGetSignedPreKeyId
       record
     } catch {
       case e: InvalidKeyException => throw new AssertionError(e)

@@ -18,7 +18,7 @@ object RegistrationData {
 
   def insert(registration: Registration) = registrationData += registration
 
-  def get() = registrationData.take(1).result
+  def get() = registrationData.take(1).result.head
 }
 
 

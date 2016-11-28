@@ -1,6 +1,7 @@
 package de.m7w3.signal
 
 import de.m7w3.signal.store.SignalDesktopProtocolStore
+import de.m7w3.signal.controller.UnlockDB
 import java.security.Security
 
 import org.whispersystems.libsignal.logging.SignalProtocolLoggerProvider
@@ -32,19 +33,15 @@ object Main extends JFXApp {
       typeOf[ApplicationContext] -> appContext
     )
 
-    // val root = if (appContext.profileDirExists && appContext.profileIsInitialized) {
-    //   // start chatsList
-    //   // TODO: show password screen
-    //   // store = appContext.tryLoadExistingStore()
-    //   // account = ???
-    //   loadFXML("/de/m7w3/signal/recent_chats_list.fxml", dependencies)
-    // } else {
-    //   // TODO: detect and handle error cases
-    //   // show welcome and registration screen
-    //   Registration.load(appContext)
-    // }
+    val root = if (appContext.profileDirExists && appContext.profileIsInitialized) {
+      UnlockDB.load(appContext)
+    } else {
+      // TODO: detect and handle error cases
+      // show welcome and registration screen
+      DeviceRegistration.load(appContext)
+    }
 
-    val root = loadFXML("/de/m7w3/signal/recent_chats_list.fxml", dependencies)
+    // val root = UnlockDB.load(appContext)
     stage = new PrimaryStage {
       title = "Welcome"
       scene = new Scene(root)

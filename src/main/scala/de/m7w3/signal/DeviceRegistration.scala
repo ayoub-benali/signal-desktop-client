@@ -11,23 +11,23 @@ import scalafx.scene.image.Image
 import scalafx.scene.layout.{VBox, StackPane, BackgroundSize, BackgroundRepeat, BackgroundPosition, BackgroundImage, Background}
 import scalafx.scene.Parent
 
-package object Registration{
-  def load(context: ApplicationContext): Parent = {
+object DeviceRegistration{
 
+  def load(context: ApplicationContext): Parent = {
     object Step1 extends VBox {
       this.alignment = Pos.Center
       private val hello = new Label("Hello")
       private val appRequired = new Label("You must have Signal for Android for using this client")
       private val haveApp = new Button("I have Signal for Android")
       haveApp.onAction = (a: ActionEvent) => {
-        Step1.setVisible(false)
+        this.setVisible(false)
         Step2.setVisible(true)
       }
       this.children = List(hello, appRequired, haveApp)
     }
 
     object Step2 extends VBox {
-      Step2.setVisible(false)
+      this.setVisible(false)
       this.alignment = Pos.Center
       private val deviceLable = new Label("Enter a name for this device:")
       val deviceName = new TextField()
@@ -38,7 +38,7 @@ package object Registration{
       // TODO: set reasonable width
       val ok = new Button("OK")
       ok.onAction = (a: ActionEvent) => {
-        Step2.setVisible(false)
+        this.setVisible(false)
         Step3.setVisible(true)
         // TODO: do this in a better way
         Main.account = AccountHelper(userId.getText())
@@ -53,7 +53,7 @@ package object Registration{
     }
 
     object Step3 extends VBox{
-      Step3.setVisible(false)
+      this.setVisible(false)
       this.alignment = Pos.Center
       private val label = new Label("Open Signal on your phone and go to Settings > Devices. Click on the plus icon and scan the above QR code.")
       val qrCode = new StackPane

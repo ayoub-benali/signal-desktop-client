@@ -2,12 +2,9 @@ package de.m7w3.signal.store
 
 import java.util
 
-import de.m7w3.signal.store.model.{Registration, RegistrationData, Schema}
+import de.m7w3.signal.store.model.{Registration, RegistrationData}
 import org.whispersystems.libsignal.state.{PreKeyRecord, SessionRecord, SignalProtocolStore, SignedPreKeyRecord}
 import org.whispersystems.libsignal.{IdentityKey, IdentityKeyPair, SignalProtocolAddress}
-import slick.driver.H2Driver.api._
-
-import scala.concurrent.duration._
 
 case class SignalDesktopProtocolStore(dbRunner: DBActionRunner) extends SignalProtocolStore {
 
@@ -78,5 +75,9 @@ case class SignalDesktopProtocolStore(dbRunner: DBActionRunner) extends SignalPr
     val registration = Registration(userName, deviceId, password, signalingKey)
     dbRunner.run(RegistrationData.insert(registration))
     ()
+  }
+
+  def getRegistrationData(): Registration = {
+    dbRunner.run(RegistrationData.get())
   }
 }

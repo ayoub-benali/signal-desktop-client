@@ -32,18 +32,19 @@ object Main extends JFXApp {
       typeOf[ApplicationContext] -> appContext
     )
 
-    val root = if (appContext.profileDirExists && appContext.profileIsInitialized) {
-      // start chatsList
-      // TODO: show password screen
-      // store = appContext.tryLoadExistingStore()
-      // account = ???
-      loadFXML("/de/m7w3/signal/recent_chats_list.fxml", dependencies)
-    } else {
-      // TODO: detect and handle error cases
-      // show welcome and registration screen
-      Registration.load(appContext)
-    }
+    // val root = if (appContext.profileDirExists && appContext.profileIsInitialized) {
+    //   // start chatsList
+    //   // TODO: show password screen
+    //   // store = appContext.tryLoadExistingStore()
+    //   // account = ???
+    //   loadFXML("/de/m7w3/signal/recent_chats_list.fxml", dependencies)
+    // } else {
+    //   // TODO: detect and handle error cases
+    //   // show welcome and registration screen
+    //   Registration.load(appContext)
+    // }
 
+    val root = loadFXML("/de/m7w3/signal/recent_chats_list.fxml", dependencies)
     stage = new PrimaryStage {
       title = "Welcome"
       scene = new Scene(root)

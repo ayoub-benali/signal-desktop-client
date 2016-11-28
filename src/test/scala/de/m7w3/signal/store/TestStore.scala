@@ -1,6 +1,5 @@
 package de.m7w3.signal.store
 
-
 import org.scalatest.{BeforeAndAfterEach, Suite}
 import org.whispersystems.libsignal.SignalProtocolAddress
 

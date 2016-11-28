@@ -2,11 +2,13 @@ package de.m7w3.signal
 
 import javafx.stage.Stage
 
+import com.sun.javafx.tk.Toolkit
 import org.junit.Test
 import org.scalatest.junit.{AssertionsForJUnit, JUnitSuiteLike}
 import org.testfx.api.FxAssert._
 import org.testfx.framework.junit.ApplicationTest
 import org.testfx.matcher.base.NodeMatchers._
+import org.testfx.util.WaitForAsyncUtils
 
 import scalafx.Includes._
 import scalafx.scene.Scene
@@ -32,10 +34,12 @@ class ChatsListTest extends ApplicationTest with JUnitSuiteLike with AssertionsF
     verifyThat("#switch", isNull)
 
     clickOn("#newChatBtn")
+    WaitForAsyncUtils.waitForFxEvents()
     verifyThat("#switch", isVisible)
     verifyThat("#chatsList", isNull)
 
     clickOn("#switch")
+    WaitForAsyncUtils.waitForFxEvents()
     verifyThat("#chatsList", isVisible)
     verifyThat("#switch", isNull)
   }

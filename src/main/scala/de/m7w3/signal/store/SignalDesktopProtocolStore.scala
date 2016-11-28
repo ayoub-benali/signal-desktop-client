@@ -1,10 +1,12 @@
 package de.m7w3.signal.store
 
 import java.util
-import de.m7w3.signal.store.model.Schema
+
+import de.m7w3.signal.store.model.{Registration, RegistrationData, Schema}
 import org.whispersystems.libsignal.state.{PreKeyRecord, SessionRecord, SignalProtocolStore, SignedPreKeyRecord}
 import org.whispersystems.libsignal.{IdentityKey, IdentityKeyPair, SignalProtocolAddress}
 import slick.driver.H2Driver.api._
+
 import scala.concurrent.duration._
 
 case class SignalDesktopProtocolStore(dbRunner: DBActionRunner) extends SignalProtocolStore {
@@ -72,35 +74,9 @@ case class SignalDesktopProtocolStore(dbRunner: DBActionRunner) extends SignalPr
   override def deleteSession(address: SignalProtocolAddress): Unit =
     sessionStore.deleteSession(address)
 
-  def storePreKeyIdOffset(id: Int): Unit = {
-    ???
-  }
-
-  def getPreKeyIdOffset(): Int = {
-    ???
-  }
-
-  def storeNextSignedPreKeyId(id: Int): Unit = {
-    ???
-  }
-
-  def getNextSignedPreKeyId(): Int = {
-    ???
-  }
-
-  def save(userName: String, deviceId: Int, password: String, signalingKey: String, preKeyIdOffset: Int, nextSignedPreKeyId: Int): Unit = {
-    ???
-  }
-}
-
-object SignalDesktopProtocolStore{
-  def getOrCreate: SignalDesktopProtocolStore = {
-    val database = Database.forURL("jdbc:h2:mem:signal-test;DB_CLOSE_DELAY=-1", driver="org.h2.Driver")
-    val dBActionRunner = DBActionRunner(database, 10.seconds, verbose = true)
-    dBActionRunner.run(DBIO.seq(
-      Schema.schema.create
-    ))
-    // TODO: read DB from file when there
-    SignalDesktopProtocolStore(dBActionRunner)
+  def save(userName: String, deviceId: Int, password: String, signalingKey: String): Unit = {
+    val registration = Registration(userName, deviceId, password, signalingKey)
+    dbRunner.run(RegistrationData.insert(registration))
+    ()
   }
 }

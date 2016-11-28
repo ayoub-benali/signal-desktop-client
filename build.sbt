@@ -41,5 +41,6 @@ libraryDependencies ++= Seq(
   "org.apache.logging.log4j"  % "log4j-api"            % "2.7",
   "org.apache.logging.log4j"  % "log4j-core"           % "2.7",
   "com.h2database"            % "h2"                   % "1.4.193",
-  "com.typesafe.slick"        %% "slick"               % "3.1.1"
+  "com.typesafe.slick"        %% "slick"               % "3.1.1",
+  "com.github.harawata"       % "appdirs"              % "1.0.0-SNAPSHOT"
 )

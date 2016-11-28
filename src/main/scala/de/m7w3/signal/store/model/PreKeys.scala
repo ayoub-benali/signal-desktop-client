@@ -1,6 +1,7 @@
 package de.m7w3.signal.store.model
 
 import org.whispersystems.libsignal.state.PreKeyRecord
+import org.whispersystems.libsignal.util.Medium
 import slick.driver.H2Driver.api._
 
 class PreKeys(tag: Tag) extends Table[PreKeyRecord](tag, "PRE_KEYS") {
@@ -15,6 +16,14 @@ class PreKeys(tag: Tag) extends Table[PreKeyRecord](tag, "PRE_KEYS") {
 }
 
 object PreKeys {
+  val SEQUENCE_NAME = "PRE_KEYS_ID_SEQUENCE"
+  val MAX_VALUE = Medium.MAX_VALUE
+  val idSequence = Sequence[Int](SEQUENCE_NAME)
+    .start(0)
+    .inc(1)
+    .max(MAX_VALUE)
+    .cycle
+
   val preKeys = TableQuery[PreKeys]
 
   def exists(keyId: Int) = {

@@ -26,4 +26,12 @@ case class SignalDesktopPreKeyStore(dbRunner: DBActionRunner) extends PreKeyStor
     dbRunner.run(saveAction)
     ()
   }
+
+  def incrementAndGetPreKeyId(): Int = {
+    dbRunner.run(PreKeys.idSequence.next.result)
+  }
+
+  def getPreKeyId: Int = {
+    dbRunner.run(PreKeys.idSequence.curr.result)
+  }
 }

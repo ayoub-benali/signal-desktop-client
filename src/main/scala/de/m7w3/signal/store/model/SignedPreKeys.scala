@@ -2,6 +2,7 @@ package de.m7w3.signal.store.model
 
 
 import org.whispersystems.libsignal.state.SignedPreKeyRecord
+import org.whispersystems.libsignal.util.Medium
 import slick.driver.H2Driver.api._
 
 case class SignedPreKey(id: Int, keyBytes: Array[Byte]) {
@@ -16,6 +17,15 @@ class SignedPreKeys(tag: Tag) extends Table[SignedPreKey](tag, "SIGNED_PRE_KEYS"
 }
 
 object SignedPreKeys {
+
+  val SEQUENCE_NAME = "SIGNED_PRE_KEYS_ID_SEQUENCE"
+  val MAX_VALUE = Medium.MAX_VALUE
+  val idSequence = Sequence[Int](SEQUENCE_NAME)
+                        .start(0)
+                        .inc(1)
+                        .max(MAX_VALUE)
+                        .cycle
+
   val signedPreKeys = TableQuery[SignedPreKeys]
 
   def get(keyId: Int) = {

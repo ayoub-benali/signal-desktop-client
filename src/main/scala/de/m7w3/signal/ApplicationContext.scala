@@ -24,7 +24,7 @@ case class ApplicationContext(config: Config.SignalDesktopConfig) {
   def profileIsInitialized: Boolean = {
     // simple check if database file exists
     // because for all other checks we'd need a password
-    databaseContext.dbPath.toFile.exists()
+    databaseContext.dbFilePath.toFile.exists()
   }
 
   def profileDirExists: Boolean = config.profileDir.exists()
@@ -48,23 +48,34 @@ case class ApplicationContext(config: Config.SignalDesktopConfig) {
 
 case class DatabaseContext(config: Config.SignalDesktopConfig) {
 
-  val DB_NAME = "signal-desktop.db"
+  val DB_NAME = "signal-desktop"
   val DB_USER = "signal-desktop"
 
-  val CONNECTION_PROPERTIES: Map[String, String] = Map("CIPHER" -> "AES")
+  val CONNECTION_PROPERTIES: Map[String, String] = Map(
+    "CIPHER" -> "AES",
+    "MVSTORE" -> "TRUE"
+  )
 
   val LOAD_CONNECTION_PROPERTIES: Map[String, String] = CONNECTION_PROPERTIES + ("IFEXISTS" -> "TRUE")
 
   var database: Option[Database] = None
 
-  def dbPath: Path = Paths.get(config.profileDir.getAbsolutePath, DB_NAME)
+  /**
+    * path of the database to be used in the JDBC URL
+    */
+  def uriDbPath: Path = Paths.get(config.profileDir.getAbsolutePath, DB_NAME)
+
+  /**
+    * actual path of the database
+    */
+  def dbFilePath: Path = Paths.get(uriDbPath.toString, "mv.db")
 
   def connectionProperties(onlyIfExists: Boolean): String = {
     val props = if (onlyIfExists) LOAD_CONNECTION_PROPERTIES else CONNECTION_PROPERTIES
     props.map { case (k, v) => s"$k=$v"} mkString(";", ";", "")
   }
 
-  def dbUrl(onlyIfExists: Boolean): String = s"jdbc:h2:file:${dbPath.toString};${connectionProperties(onlyIfExists)}"
+  def dbUrl(onlyIfExists: Boolean): String = s"jdbc:h2:file:${uriDbPath.toString};${connectionProperties(onlyIfExists)}"
 
   private def loadDatabase(password: String, onlyIfExists: Boolean = false): Try[Database] = {
     database match {
@@ -72,8 +83,7 @@ case class DatabaseContext(config: Config.SignalDesktopConfig) {
         if (onlyIfExists) {
           Failure(new DatabaseDoesNotExistException)
         } else {
-
-          val passwords: String = s"$password $password" //TODO: is this secure?
+          val passwords: String = s"$password $password" // #YOLO
           Success(Database.forURL(
             url = dbUrl(onlyIfExists),
             user = DB_USER,
@@ -85,7 +95,6 @@ case class DatabaseContext(config: Config.SignalDesktopConfig) {
   }
 
   def initializeDatabase(dBActionRunner: DBActionRunner): Unit = {
-
     dBActionRunner.run(DBIO.seq(
       Schema.schema.create
     ))

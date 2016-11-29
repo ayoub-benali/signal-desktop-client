@@ -2,14 +2,18 @@ package de.m7w3.signal
 
 import java.io.ByteArrayInputStream
 
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+
+import de.m7w3.signal.controller.ChatsList
 import scalafx.Includes._
-import scalafx.application.Platform
+import scalafx.application.JFXApp.PrimaryStage
 import scalafx.event.ActionEvent
 import scalafx.geometry.Pos
-import scalafx.scene.control.{Button, Label, TextField}
+import scalafx.scene.{Parent, Scene}
+import scalafx.scene.control.{Button, Label, PasswordField, TextField}
 import scalafx.scene.image.Image
-import scalafx.scene.layout.{VBox, StackPane, BackgroundSize, BackgroundRepeat, BackgroundPosition, BackgroundImage, Background}
-import scalafx.scene.Parent
+import scalafx.scene.layout.{Background, BackgroundImage, BackgroundPosition, BackgroundRepeat, BackgroundSize, StackPane, VBox}
 
 object DeviceRegistration{
 
@@ -34,7 +38,7 @@ object DeviceRegistration{
       val userIdLable = new Label("Enter your device phone number: ")
       val userId = new TextField()
       val dbPasswordLable = new Label("Enter a password to encrypt the database")
-      val dbPassword = new TextField()
+      val dbPassword = new PasswordField()
       // TODO: set reasonable width
       val ok = new Button("OK")
       ok.onAction = (a: ActionEvent) => {
@@ -42,14 +46,13 @@ object DeviceRegistration{
         Step3.setVisible(true)
         // TODO: do this in a better way
         Main.account = AccountHelper(userId.getText())
-        Platform.runLater{
-          val outputstream = QRCodeGenerator.generate(() => Main.account.getNewDeviceURL)
+        Future(QRCodeGenerator.generate(() => Main.account.getNewDeviceURL)).map(outputstream => {
           val image = new Image(new ByteArrayInputStream(outputstream.toByteArray), 600D, 600D, true, true)
           val backgroundImage = new BackgroundImage(image, BackgroundRepeat.NoRepeat, BackgroundRepeat.NoRepeat, BackgroundPosition.Center, BackgroundSize.Default)
           Step3.qrCode.setBackground(new Background(Array(backgroundImage)))
-        }
+        })
       }
-      this.children = List(deviceLable, deviceName, userIdLable, userId, ok)
+      this.children = List(deviceLable, deviceName, userIdLable, userId, dbPasswordLable, dbPassword, ok)
     }
 
     object Step3 extends VBox{
@@ -61,12 +64,16 @@ object DeviceRegistration{
       qrCode.prefHeight = 600D
       val finish = new Button("Finish")
       finish.onAction = (a: ActionEvent) => {
-        Platform.runLater{
+        Future{
           Main.store = context.createNewProtocolStore(Step2.dbPassword.getText())
           Main.account.finishDeviceLink(Step2.deviceName.getText(), Main.store)
+          val root = ChatsList.load(context)
+          Main.stage = new PrimaryStage {
+            title = "Welcome"
+            scene = new Scene(root)
+          }
         }
       }
-
       this.children = List(qrCode, label, finish)
     }
 

@@ -11,7 +11,7 @@ import scalafx.scene.control.PasswordField
 import scala.util.Success
 import scalafx.Includes._
 import de.m7w3.signal.Main
-
+import scalafx.application.Platform
 
 object UnlockDB {
 
@@ -23,18 +23,24 @@ object UnlockDB {
       private val password = new PasswordField()
       private val button = new Button("Unlock")
       button.onAction = (a: ActionEvent) => {
-        context.tryLoadExistingStore(password.getText()) match {
-          case Success(s) => {
-            Main.store = s
-            val data = s.getRegistrationData
-            Main.account = AccountHelper(data.userName, data.password)
+        Platform.runLater{
+          context.tryLoadExistingStore(password.getText()) match {
+            case Success(s) => {
+              Main.store = s
+              val data = s.getRegistrationData
+              Main.account = AccountHelper(data.userName, data.password)
+              ChatsList.load(context)
+            }
+            case _ => {
+              println("shizzle")
+              // TODO: show an error message
+
+            }
           }
-          case _ => // TODO: show an error message
         }
       }
-      this.children = List(msg, button)
+      this.children = List(msg, password, button)
     }
-
     Unlock
   }
 }

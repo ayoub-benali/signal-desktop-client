@@ -1,7 +1,11 @@
 package de.m7w3.signal.controller
 
+import de.m7w3.signal.ApplicationContext
+
+import scala.reflect.runtime.universe.{Type, typeOf}
 import scalafx.Includes._
 import scalafx.event.ActionEvent
+import scalafx.scene.Parent
 import scalafx.scene.control.{Button, ButtonBar}
 import scalafx.scene.layout.AnchorPane
 import scalafxml.core.macros.{nested, sfxml}
@@ -10,13 +14,15 @@ import de.m7w3.signal.{ApplicationContext, InitiatedContext}
 import scala.reflect.runtime.universe.{Type, typeOf}
 import scalafxml.core.{DependenciesByType, FXMLView}
 
+
 @sfxml
 class ChatsListController(
-  val chatsListButtonBar: ButtonBar,
-  val newChatBtn: Button,
-  @nested[EditMenuController] editMenuController: MenuController,
-  @nested[FileMenuController] fileMenuController: MenuController,
-  @nested[HelpMenuController] helpMenuController: MenuController) {
+    val chatsListButtonBar: ButtonBar,
+    val newChatBtn: Button,
+    @nested[EditMenuController] editMenuController: MenuController,
+    @nested[FileMenuController] fileMenuController: MenuController,
+    @nested[HelpMenuController] helpMenuController: MenuController,
+    applicationContext: ApplicationContext) {
 
   println(s"editMenuController initialized $editMenuController")
 

@@ -41,7 +41,7 @@ case class ApplicationContext(config: Config.SignalDesktopConfig) {
   }
 
   def tryLoadExistingStore(password: String): Try[SignalDesktopProtocolStore] = {
-    databaseContext.dbActionRunner(password, onlyIfExists = true)
+    databaseContext.dbActionRunner(password, onlyIfExists = false)
       .map(SignalDesktopProtocolStore(_))
   }
 }
@@ -52,8 +52,7 @@ case class DatabaseContext(config: Config.SignalDesktopConfig) {
   val DB_USER = "signal-desktop"
 
   val CONNECTION_PROPERTIES: Map[String, String] = Map(
-    "CIPHER" -> "AES",
-    "MVSTORE" -> "TRUE"
+    "CIPHER" -> "AES"
   )
 
   val LOAD_CONNECTION_PROPERTIES: Map[String, String] = CONNECTION_PROPERTIES + ("IFEXISTS" -> "TRUE")
@@ -68,7 +67,7 @@ case class DatabaseContext(config: Config.SignalDesktopConfig) {
   /**
     * actual path of the database
     */
-  def dbFilePath: Path = Paths.get(uriDbPath.toString, "mv.db")
+  def dbFilePath: Path = Paths.get(uriDbPath.toString + ".mv.db")
 
   def connectionProperties(onlyIfExists: Boolean): String = {
     val props = if (onlyIfExists) LOAD_CONNECTION_PROPERTIES else CONNECTION_PROPERTIES

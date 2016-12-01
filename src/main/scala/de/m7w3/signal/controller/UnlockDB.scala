@@ -1,17 +1,16 @@
 package de.m7w3.signal.controller
 
-import de.m7w3.signal.{ApplicationContext, AccountHelper}
-import scalafx.scene.Parent
-import scalafx.scene.layout.VBox
-import scalafx.geometry.Pos
-import scalafx.scene.control.Label
-import scalafx.scene.control.Button
-import scalafx.event.ActionEvent
-import scalafx.scene.control.PasswordField
-import scala.util.Success
+import scala.util.{Failure, Success}
+
+import de.m7w3.signal.{Main, AccountHelper, ApplicationContext}
 import scalafx.Includes._
-import de.m7w3.signal.Main
+import scalafx.application.JFXApp.PrimaryStage
 import scalafx.application.Platform
+import scalafx.event.ActionEvent
+import scalafx.geometry.Pos
+import scalafx.scene.{Parent, Scene}
+import scalafx.scene.control.{PasswordField, Label, Button}
+import scalafx.scene.layout.VBox
 
 object UnlockDB {
 
@@ -29,12 +28,15 @@ object UnlockDB {
               Main.store = s
               val data = s.getRegistrationData
               Main.account = AccountHelper(data.userName, data.password)
-              ChatsList.load(context)
+              val root = ChatsList.load(context)
+              Main.stage = new PrimaryStage {
+                title = "Welcome"
+                scene = new Scene(root)
+              }
             }
-            case _ => {
-              println("shizzle")
+            case Failure(t) => {
+              t.printStackTrace
               // TODO: show an error message
-
             }
           }
         }

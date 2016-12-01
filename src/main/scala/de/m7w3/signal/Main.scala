@@ -26,7 +26,6 @@ object Main extends JFXApp {
   val signalDesktopConfig = Config.optionParser.parse(parameters.raw, Config.SignalDesktopConfig())
   signalDesktopConfig.foreach { config =>
     val appContext = ApplicationContext(config)
-
     val root = if (appContext.profileDirExists && appContext.profileIsInitialized) {
       UnlockDB.load(appContext)
     } else {

@@ -8,6 +8,7 @@ import scala.concurrent.Future
 import de.m7w3.signal.controller.ChatsList
 import scalafx.Includes._
 import scalafx.application.JFXApp.PrimaryStage
+import scalafx.application.Platform
 import scalafx.event.ActionEvent
 import scalafx.geometry.Pos
 import scalafx.scene.{Parent, Scene}
@@ -64,7 +65,7 @@ object DeviceRegistration{
       qrCode.prefHeight = 600D
       val finish = new Button("Finish")
       finish.onAction = (a: ActionEvent) => {
-        Future{
+        Platform.runLater{
           Main.store = context.createNewProtocolStore(Step2.dbPassword.getText())
           Main.account.finishDeviceLink(Step2.deviceName.getText(), Main.store)
           val root = ChatsList.load(context)

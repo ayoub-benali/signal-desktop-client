@@ -78,18 +78,17 @@ case class DatabaseContext(config: Config.SignalDesktopConfig) {
 
   private def loadDatabase(password: String, onlyIfExists: Boolean = false): Try[Database] = {
     database match {
-      case None =>
+      case None => {
         val passwords: String = s"$password $password" // #YOLO
         val loaded = Try { Database.forURL(
-          url = dbUrl(onlyIfExists),
-          user = DB_USER,
-          password = passwords,
-          driver = "org.h2.Driver")
-        }
-        loaded.foreach { db =>
-          database = Some(db)
-        }
+            url = dbUrl(onlyIfExists),
+            user = DB_USER,
+            password = passwords,
+            driver = "org.h2.Driver")
+          }
+        loaded.foreach{ db => database = Some(db) }
         loaded
+      }
       case Some(db) => Success(db)
     }
   }

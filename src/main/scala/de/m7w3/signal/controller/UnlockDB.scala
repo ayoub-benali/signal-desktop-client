@@ -21,6 +21,7 @@ object UnlockDB {
       private val msg = new Label("Please enter the password to unlock the database")
       private val password = new PasswordField()
       private val button = new Button("Unlock")
+      button.defaultButtonProperty().bind(password.focusedProperty())
       button.onAction = (a: ActionEvent) => {
         Platform.runLater{
           context.tryLoadExistingStore(password.getText()) match {

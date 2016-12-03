@@ -41,7 +41,7 @@ case class ApplicationContext(config: Config.SignalDesktopConfig) {
   }
 
   def tryLoadExistingStore(password: String): Try[SignalDesktopProtocolStore] = {
-    databaseContext.dbActionRunner(password, onlyIfExists = false)
+    databaseContext.dbActionRunner(password, onlyIfExists = true)
       .map(SignalDesktopProtocolStore(_))
   }
 }
@@ -79,16 +79,17 @@ case class DatabaseContext(config: Config.SignalDesktopConfig) {
   private def loadDatabase(password: String, onlyIfExists: Boolean = false): Try[Database] = {
     database match {
       case None =>
-        if (onlyIfExists) {
-          Failure(new DatabaseDoesNotExistException)
-        } else {
-          val passwords: String = s"$password $password" // #YOLO
-          Success(Database.forURL(
-            url = dbUrl(onlyIfExists),
-            user = DB_USER,
-            password = passwords,
-            driver = "org.h2.Driver"))
+        val passwords: String = s"$password $password" // #YOLO
+        val loaded = Try { Database.forURL(
+          url = dbUrl(onlyIfExists),
+          user = DB_USER,
+          password = passwords,
+          driver = "org.h2.Driver")
         }
+        loaded.foreach { db =>
+          database = Some(db)
+        }
+        loaded
       case Some(db) => Success(db)
     }
   }

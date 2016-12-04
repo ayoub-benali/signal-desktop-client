@@ -13,7 +13,7 @@ import org.whispersystems.libsignal.util.{KeyHelper, Medium}
 import org.whispersystems.signalservice.api.SignalServiceAccountManager
 import org.whispersystems.signalservice.internal.util.Base64
 
-case class AccountHelper(userId: String, password: String = Util.getSecret(20)){
+case class AccountHelper(userId: String, password: String){
 
   val PREKEY_BATCH_SIZE = 100
   // some init to create a SignalServiceAccountManager

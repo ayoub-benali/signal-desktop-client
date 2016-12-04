@@ -64,8 +64,9 @@ object DeviceRegistration{
       ok.onAction = (a: ActionEvent) => {
         this.setVisible(false)
         Step3.setVisible(true)
+        val password = Util.getSecret(20)
         // TODO: do this in a better way
-        Main.account = AccountHelper(userId.getText())
+        Main.account = AccountHelper(userId.getText(), password)
         //TODO: show a progress bar while the future is not complete
         Platform.runLater{
           println("pressed")

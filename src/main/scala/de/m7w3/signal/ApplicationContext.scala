@@ -29,7 +29,7 @@ case class ApplicationContext(config: Config.SignalDesktopConfig) {
   def profileDirExists: Boolean = config.profileDir.exists()
 
   def createNewProtocolStore(password: String): SignalDesktopProtocolStore = {
-    databaseContext.dbActionRunner(password, onlyIfExists = false, false) match {
+    databaseContext.dbActionRunner(password, onlyIfExists = false, skipCache = false) match {
       case Failure(t) =>
         logger.error("error creating new protocol store", t)
         throw t

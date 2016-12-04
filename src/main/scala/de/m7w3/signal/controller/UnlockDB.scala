@@ -11,6 +11,7 @@ import scalafx.geometry.Pos
 import scalafx.scene.{Parent, Scene}
 import scalafx.scene.control.{PasswordField, Label, Button}
 import scalafx.scene.layout.VBox
+import scala.util.Try
 
 object UnlockDB {
 
@@ -24,8 +25,10 @@ object UnlockDB {
       button.defaultButtonProperty().bind(password.focusedProperty())
       button.onAction = (a: ActionEvent) => {
         Platform.runLater{
-          context.tryLoadExistingStore(password.getText()) match {
-            case Success(s) => {
+          val result: Try[Unit] = for{
+            s <- context.tryLoadExistingStore(password.getText(), skipCache = true)
+            data <- Try(s.getRegistrationData)
+          } yield{
               Main.store = s
               val data = s.getRegistrationData
               Main.account = AccountHelper(data.userName, data.password)
@@ -33,13 +36,9 @@ object UnlockDB {
               Main.stage = new PrimaryStage {
                 title = "Welcome"
                 scene = new Scene(root)
-              }
-            }
-            case Failure(t) => {
-              t.printStackTrace
-              // TODO: show an error message
             }
           }
+          result.failed.foreach(t => t.printStackTrace())
         }
       }
       this.children = List(msg, password, button)

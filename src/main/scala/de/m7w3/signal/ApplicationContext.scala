@@ -2,7 +2,6 @@ package de.m7w3.signal
 
 import java.nio.file.{Path, Paths}
 
-import de.m7w3.signal.exceptions.DatabaseDoesNotExistException
 import de.m7w3.signal.store.model.Schema
 import de.m7w3.signal.store.{DBActionRunner, SignalDesktopProtocolStore}
 import org.apache.logging.log4j.Level
@@ -30,7 +29,7 @@ case class ApplicationContext(config: Config.SignalDesktopConfig) {
   def profileDirExists: Boolean = config.profileDir.exists()
 
   def createNewProtocolStore(password: String): SignalDesktopProtocolStore = {
-    databaseContext.dbActionRunner(password, onlyIfExists = false) match {
+    databaseContext.dbActionRunner(password, onlyIfExists = false, false) match {
       case Failure(t) =>
         logger.error("error creating new protocol store", t)
         throw t
@@ -40,8 +39,8 @@ case class ApplicationContext(config: Config.SignalDesktopConfig) {
     }
   }
 
-  def tryLoadExistingStore(password: String): Try[SignalDesktopProtocolStore] = {
-    databaseContext.dbActionRunner(password, onlyIfExists = true)
+  def tryLoadExistingStore(password: String, skipCache: Boolean): Try[SignalDesktopProtocolStore] = {
+    databaseContext.dbActionRunner(password, onlyIfExists = true, skipCache)
       .map(SignalDesktopProtocolStore(_))
   }
 }
@@ -76,11 +75,13 @@ case class DatabaseContext(config: Config.SignalDesktopConfig) {
 
   def dbUrl(onlyIfExists: Boolean): String = s"jdbc:h2:file:${uriDbPath.toString};${connectionProperties(onlyIfExists)}"
 
-  private def loadDatabase(password: String, onlyIfExists: Boolean = false): Try[Database] = {
+  private def loadDatabase(password: String, onlyIfExists: Boolean = false, skipCache: Boolean): Try[Database] = {
     database match {
-      case None => {
+      case Some(db) if(!skipCache) => Success(db)
+      case _ => {
         val passwords: String = s"$password $password" // #YOLO
-        val loaded = Try { Database.forURL(
+        val loaded = Try {
+            Database.forURL(
             url = dbUrl(onlyIfExists),
             user = DB_USER,
             password = passwords,
@@ -89,7 +90,6 @@ case class DatabaseContext(config: Config.SignalDesktopConfig) {
         loaded.foreach{ db => database = Some(db) }
         loaded
       }
-      case Some(db) => Success(db)
     }
   }
 
@@ -99,8 +99,8 @@ case class DatabaseContext(config: Config.SignalDesktopConfig) {
     ))
   }
 
-  def dbActionRunner(password: String, onlyIfExists: Boolean = false): Try[DBActionRunner] = {
-    loadDatabase(password, onlyIfExists).map(
+  def dbActionRunner(password: String, onlyIfExists: Boolean = false, skipCache: Boolean): Try[DBActionRunner] = {
+    loadDatabase(password, onlyIfExists, skipCache).map(
       DBActionRunner(_, timeout = config.databaseTimeout, verbose = config.verbose)
     )
   }

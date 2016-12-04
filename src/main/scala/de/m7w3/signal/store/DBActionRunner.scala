@@ -23,5 +23,4 @@ case class DBActionRunner(db: Database, timeout: Duration, verbose: Boolean = fa
     // TODO: how to query synchronously?
     Await.result(db.run(action), timeout)
   }
-
 }

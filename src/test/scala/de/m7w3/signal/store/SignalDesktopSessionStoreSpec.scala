@@ -1,7 +1,6 @@
 package de.m7w3.signal.store
 
 import org.scalatest.{FlatSpec, Matchers}
-import org.whispersystems.libsignal
 import org.whispersystems.libsignal.SignalProtocolAddress
 import org.whispersystems.libsignal.state.{SessionRecord, SessionState}
 

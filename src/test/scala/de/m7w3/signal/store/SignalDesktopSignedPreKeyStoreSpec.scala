@@ -2,8 +2,7 @@ package de.m7w3.signal.store
 
 import org.scalatest.{FlatSpec, Matchers}
 import org.whispersystems.libsignal.InvalidKeyIdException
-import org.whispersystems.libsignal.ecc.Curve
-import org.whispersystems.libsignal.state.{PreKeyRecord, SignedPreKeyRecord}
+import org.whispersystems.libsignal.state.SignedPreKeyRecord
 
 class SignalDesktopSignedPreKeyStoreSpec extends FlatSpec with Matchers with TestStore {
 

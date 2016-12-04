@@ -27,6 +27,7 @@ object UnlockDB {
     button.disable = true
     button.defaultButtonProperty().bind(password.focusedProperty())
     button.onAction = (a: ActionEvent) => {
+      button.disable = true
       Platform.runLater{
         val result: Try[Unit] = for{
           s <- context.tryLoadExistingStore(password.getText(), skipCache = true)

@@ -21,8 +21,8 @@ case class AccountHelper(userId: String, password: String){
   val accountManager = new SignalServiceAccountManager(Constants.URL, LocalKeyStore, userId, password, Constants.USER_AGENT)
 
   def getNewDeviceURL(): String = {
-    val uuid = URLEncoder.encode(accountManager.getNewDeviceUuid(), "UTF-8")
-    val publicKey = URLEncoder.encode(Base64.encodeBytesWithoutPadding(temporaryIdentity.getPublicKey().serialize()), "UTF-8")
+    val uuid = URLEncoder.encode(accountManager.getNewDeviceUuid, "UTF-8")
+    val publicKey = URLEncoder.encode(Base64.encodeBytesWithoutPadding(temporaryIdentity.getPublicKey.serialize()), "UTF-8")
     val url = s"tsdevice:/?uuid=$uuid&pub_key=$publicKey"
     url
   }
@@ -31,9 +31,9 @@ case class AccountHelper(userId: String, password: String){
       val signalingKey = Util.getSecret(52)
       val temporaryRegistrationId = KeyHelper.generateRegistrationId(false)
       val ret = accountManager.finishNewDeviceRegistration(temporaryIdentity, signalingKey, false, true, temporaryRegistrationId, deviceName)
-      val deviceId = ret.getDeviceId()
-      val username = ret.getNumber()
-      val identity = Identity(deviceId, temporaryIdentity.serialize())
+      val deviceId = ret.getDeviceId
+      val username = ret.getNumber
+      val identity = Identity(deviceId, ret.getIdentity.serialize())
       store.identityKeyStore.initialize(identity)
       refreshPreKeys(store)
       // requestSyncGroups();
@@ -48,7 +48,7 @@ case class AccountHelper(userId: String, password: String){
     val lastResortKey = getOrGenerateLastResortPreKey(store)
     val signedPreKeyRecord = generateSignedPreKey(store.getIdentityKeyPair(), store)
 
-    accountManager.setPreKeys(store.getIdentityKeyPair().getPublicKey(), lastResortKey, signedPreKeyRecord, oneTimePreKeys.asJava)
+    accountManager.setPreKeys(store.getIdentityKeyPair().getPublicKey, lastResortKey, signedPreKeyRecord, oneTimePreKeys.asJava)
   }
 
   def generatePreKeys(store: SignalDesktopProtocolStore): List[PreKeyRecord] = {
@@ -79,11 +79,11 @@ case class AccountHelper(userId: String, password: String){
     try {
       val nextSignedPreKeyId = store.signedPreKeyStore.getSignedPreKeyId
       val keyPair = Curve.generateKeyPair()
-      val signature = Curve.calculateSignature(identityKeyPair.getPrivateKey(), keyPair.getPublicKey().serialize())
+      val signature = Curve.calculateSignature(identityKeyPair.getPrivateKey, keyPair.getPublicKey.serialize())
 
       val record = new SignedPreKeyRecord(nextSignedPreKeyId, System.currentTimeMillis(), keyPair, signature)
       store.storeSignedPreKey(nextSignedPreKeyId, record)
-      store.signedPreKeyStore.incrementAndGetSignedPreKeyId
+      store.signedPreKeyStore.incrementAndGetSignedPreKeyId()
       record
     } catch {
       case e: InvalidKeyException => throw new AssertionError(e)

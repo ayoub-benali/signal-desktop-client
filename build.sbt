@@ -14,7 +14,7 @@ scalacOptions := Vector(
   "-Xlint", "-Yno-adapted-args", "-Ywarn-dead-code",
   "-Ywarn-numeric-widen", "-Ywarn-value-discard", "-Ywarn-inaccessible",
   "-Ywarn-nullary-override", "-Ywarn-nullary-unit", "-Ywarn-unused-import",
-  "-Dscala.usejavacp=true", "-Ylog-classpath"
+  "-Dscala.usejavacp=true"
 )
 
 // needed for scalafxml

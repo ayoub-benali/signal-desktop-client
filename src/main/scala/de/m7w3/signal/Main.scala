@@ -1,16 +1,15 @@
 package de.m7w3.signal
 
 import de.m7w3.signal.store.SignalDesktopProtocolStore
+import de.m7w3.signal.controller.UnlockDB
 import java.security.Security
 
 import org.whispersystems.libsignal.logging.SignalProtocolLoggerProvider
 
-import scala.reflect.runtime.universe._
 import scalafx.Includes._
 import scalafx.application.JFXApp
 import scalafx.application.JFXApp.PrimaryStage
-import scalafx.scene.{Parent, Scene}
-import scalafxml.core.{DependenciesByType, FXMLView}
+import scalafx.scene.Scene
 
 object App {
   val NAME = "signal-desktop"
@@ -27,33 +26,19 @@ object Main extends JFXApp {
   val signalDesktopConfig = Config.optionParser.parse(parameters.raw, Config.SignalDesktopConfig())
   signalDesktopConfig.foreach { config =>
     val appContext = ApplicationContext(config)
-
-    val dependencies = Map[Type, Any](
-      typeOf[ApplicationContext] -> appContext
-    )
-
     val root = if (appContext.profileDirExists && appContext.profileIsInitialized) {
-      // start chatsList
-      // TODO: show password screen
-      // store = appContext.tryLoadExistingStore()
-      // account = ???
-      loadFXML("/de/m7w3/signal/recent_chats_list.fxml", dependencies)
+      UnlockDB.load(appContext)
     } else {
       // TODO: detect and handle error cases
       // show welcome and registration screen
-      Registration.load(appContext)
+      DeviceRegistration.load(appContext)
     }
 
+    // val root = UnlockDB.load(appContext)
     stage = new PrimaryStage {
       title = "Welcome"
       scene = new Scene(root)
     }
-  }
-
-  def loadFXML(resourceUri: String, dependencies: Map[Type, Any]): Parent = {
-    val fxmlUri = getClass.getResource(resourceUri)
-    require(fxmlUri != null, s"$resourceUri not found")
-    FXMLView(fxmlUri, new DependenciesByType(dependencies))
   }
 
   override def stopApp(): Unit = {

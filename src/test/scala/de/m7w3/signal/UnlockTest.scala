@@ -2,7 +2,7 @@ package de.m7w3.signal
 
 import javafx.stage.Stage
 
-import org.junit.Test
+import org.junit.{Rule, Test}
 import org.scalatest.junit.{AssertionsForJUnit, JUnitSuiteLike}
 import org.testfx.api.FxAssert._
 import org.testfx.framework.junit.ApplicationTest
@@ -14,10 +14,15 @@ import scalafx.scene.Scene
 import scalafx.stage.{Stage => SStage}
 import de.m7w3.signal.controller.UnlockDB
 
-object UnlockTest extends ApplicationTest with JUnitSuiteLike with AssertionsForJUnit with ApplicationContextTest{
+class UnlockTest extends ApplicationTest with JUnitSuiteLike with AssertionsForJUnit {
+
+  val internalApplicationContext = new ApplicationContextRule
+
+  @Rule
+  def applicationContext: ApplicationContextRule = internalApplicationContext
 
   override def start(stage: Stage): Unit = {
-    val root = UnlockDB.load(context)
+    val root = UnlockDB.load(internalApplicationContext.get())
     val scene = new Scene(root)
     val sStage = new SStage(stage)
     sStage.setScene(scene)

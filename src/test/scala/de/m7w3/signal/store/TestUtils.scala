@@ -2,7 +2,7 @@ package de.m7w3.signal.store
 
 
 import de.m7w3.signal.store.model.Identity
-import org.whispersystems.libsignal.{IdentityKey, IdentityKeyPair}
+import org.whispersystems.libsignal.{IdentityKey, IdentityKeyPair, SignalProtocolAddress}
 import org.whispersystems.libsignal.ecc.{Curve, ECPrivateKey}
 import org.whispersystems.libsignal.state.SignedPreKeyRecord
 
@@ -26,4 +26,14 @@ object TestUtils {
     )
     new SignedPreKeyRecord(signedPreKeyId, 0L, keyPair, signature)
   }
+}
+
+trait Identities {
+  val localIdentity = TestUtils.generateIdentity
+  val remoteIdentity = TestUtils.generateIdentity
+}
+
+trait Addresses {
+  val localAddress: SignalProtocolAddress = new SignalProtocolAddress("+49123456789", 1)
+  val remoteAddress: SignalProtocolAddress = new SignalProtocolAddress("+49987654321", 2)
 }

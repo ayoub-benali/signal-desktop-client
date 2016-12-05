@@ -4,6 +4,7 @@ import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 import org.whispersystems.libsignal.SignalProtocolAddress
 
 class SignalDesktopIdentityKeyStoreSpec extends FlatSpec with Matchers with BeforeAndAfterAll with TestStore {
+
   behavior of "SignalDesktopIdentityKeyStore"
 
 

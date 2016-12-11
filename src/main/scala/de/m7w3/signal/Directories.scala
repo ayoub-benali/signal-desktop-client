@@ -6,7 +6,7 @@ import net.harawata.appdirs.AppDirsFactory
 
 object Directories {
   lazy val defaultProfileDir: File =
-    new File(AppDirsFactory.getInstance().getUserDataDir(App.NAME, App.VERSION, App.AUTHOR))
+    new File(AppDirsFactory.getInstance().getUserDataDir(App.NAME, null, App.AUTHOR))
 
 
 }

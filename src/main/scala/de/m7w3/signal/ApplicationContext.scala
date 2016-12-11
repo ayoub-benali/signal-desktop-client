@@ -46,6 +46,10 @@ case class InitialContext(config: Config.SignalDesktopConfig) extends Applicatio
         SignalDesktopProtocolStore(dBActionRunner)
     }
   }
+
+  def newBuilder(): ApplicationContextBuilder = {
+    new ApplicationContextBuilderImpl(this)
+  }
 }
 
 case class InitiatedContext(
@@ -57,15 +61,13 @@ trait ApplicationContextBuilder{
   def build(): Try[InitiatedContext]
   def setStore(s: SignalDesktopProtocolStore): ApplicationContextBuilder
   def setAccount(a: AccountHelper): ApplicationContextBuilder
-  def setInitialContext(c: InitialContext): ApplicationContextBuilder
 
 }
 
-object ApplicationContextBuilder extends ApplicationContextBuilder{
+private class ApplicationContextBuilderImpl(initialContext: InitialContext) extends ApplicationContextBuilder{
 
   private var store: Try[SignalDesktopProtocolStore] = Failure(new Exception("protocol store not set"))
   private var account: Try[AccountHelper] = Failure(new Exception("account not set"))
-  private var context: Try[InitialContext] = Failure(new Exception("initial context not set"))
 
   def setStore(s: SignalDesktopProtocolStore): ApplicationContextBuilder = {
     store = Success(s)
@@ -77,16 +79,10 @@ object ApplicationContextBuilder extends ApplicationContextBuilder{
     this
   }
 
-  def setInitialContext(c: InitialContext): ApplicationContextBuilder = {
-    context = Success(c)
-    this
-  }
-
   def build(): Try[InitiatedContext] = for {
-      c <- context
       a <- account
       s <- store
-    } yield InitiatedContext(a, s, c.databaseContext)
+    } yield InitiatedContext(a, s, initialContext.databaseContext)
 }
 
 case class DatabaseContext(config: Config.SignalDesktopConfig) {

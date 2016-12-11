@@ -3,7 +3,7 @@ package de.m7w3.signal
 import java.io.ByteArrayInputStream
 import java.net.InetAddress
 
-import de.m7w3.signal.controller.ChatsList
+import de.m7w3.signal.controller.MainView
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -68,7 +68,8 @@ object DeviceRegistration{
           val password = Util.getSecret(20)
           val account = AccountHelper(userId.getText(), password)
           //TODO: show a progress bar while the future is not complete
-          val outputStream = QRCodeGenerator.generate(() => account.getNewDeviceURL())
+          val generateUrl: () => String = () => account.getNewDeviceURL
+          val outputStream = QRCodeGenerator.generate(generateUrl)
           val image = new Image(new ByteArrayInputStream(outputStream.toByteArray), 300D, 300D, true, true)
 
           val step = Step3(account, dbPassword.getText(), deviceName.getText())
@@ -106,14 +107,14 @@ object DeviceRegistration{
         // TODO show a progress bar
         val store = context.createNewProtocolStore(password)
         account.finishDeviceLink(deviceName, store)
-        val initiatedContext = ApplicationContextBuilder.setStore(store)
-        .setAccount(account)
-        .setInitialContext(context)
-        .build()
+        val initiatedContext = context.newBuilder()
+          .setStore(store)
+          .setAccount(account)
+          .build()
 
         initiatedContext match {
           case Success(c) => Platform.runLater {
-            val root = ChatsList.load(c)
+            val root = MainView.load(c)
             this.getScene.setRoot(root)
           }
           case _ => {

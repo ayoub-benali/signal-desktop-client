@@ -9,7 +9,6 @@ import org.testfx.framework.junit.ApplicationTest
 import org.testfx.matcher.base.NodeMatchers._
 import org.testfx.util.WaitForAsyncUtils
 
-import scalafx.Includes._
 import scalafx.scene.Scene
 import scalafx.stage.{Stage => SStage}
 import de.m7w3.signal.controller.UnlockDB
@@ -31,18 +30,12 @@ class UnlockTest extends ApplicationTest with JUnitSuiteLike with AssertionsForJ
 
   @Test
   def viewChats(): Unit = {
-
-    // verifyThat("#chatsList", isVisible)
-    // verifyThat("#switch", isNull)
-
-    // clickOn("#newChatBtn")
-    // WaitForAsyncUtils.waitForFxEvents()
-    // verifyThat("#switch", isVisible)
-    // verifyThat("#chatsList", isNull)
-
-    // clickOn("#switch")
-    // WaitForAsyncUtils.waitForFxEvents()
-    // verifyThat("#chatsList", isVisible)
-    // verifyThat("#switch", isNull)
+    verifyThat("#unlock", isVisible())
+    verifyThat("#unlock", isDisabled())
+    verifyThat("#errorImage", isInvisible())
+    clickOn("#password").write("whatever")
+    clickOn("#unlock")
+    WaitForAsyncUtils.waitForFxEvents()
+    verifyThat("#errorImage", isVisible())
   }
 }

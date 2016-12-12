@@ -9,12 +9,12 @@ import de.m7w3.signal.store.SignalDesktopProtocolStore
 import org.junit.rules.ExternalResource
 
 import scala.concurrent.duration._
-import scala.util.{Success, Try}
+import scala.util.{Failure, Success, Try}
 
 class ApplicationContextRule extends ExternalResource with StoreResource {
 
   private val context: AtomicReference[ApplicationContext] = new AtomicReference[ApplicationContext]()
-
+  private val defaultPassword = "foo"
   override def before(): Unit = {
     super.before()
     setupResource()
@@ -23,7 +23,10 @@ class ApplicationContextRule extends ExternalResource with StoreResource {
         override def profileDirExists: Boolean = true
         override def profileIsInitialized: Boolean = true
         override def createNewProtocolStore(password: String): SignalDesktopProtocolStore = protocolStore
-        override def tryLoadExistingStore(password: String, skipCache: Boolean): Try[SignalDesktopProtocolStore] = Success(protocolStore)
+        override def tryLoadExistingStore(password: String, skipCache: Boolean): Try[SignalDesktopProtocolStore] = {
+          if (password == defaultPassword) Success(protocolStore)
+          else Failure(new Throwable("wrong password"))
+        }
     })
   }
   override def after(): Unit = {

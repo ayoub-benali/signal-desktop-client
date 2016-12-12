@@ -16,9 +16,14 @@ object UnlockDB {
 
   def load(context: ApplicationContext): Parent = {
 
-    val img =  new ImageView(this.getClass().getResource("/images/circle-x.png").toString())
-    val button = new Button("Unlock")
+    val img = new ImageView(this.getClass().getResource("/images/circle-x.png").toString())
+    img.id = "errorImage"
+    val button = new Button{
+      text = "Unlock"
+      id = "unlock"
+    }
     val password = new PasswordField{
+      id = "password"
       promptText = "Password"
       prefColumnCount = 10
       text.onChange{button.disable = text.toString().trim.isEmpty}

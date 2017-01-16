@@ -39,13 +39,12 @@ object UnlockDB {
           data <- Try(s.getRegistrationData)
         } yield{
             Main.store = s
-            val data = s.getRegistrationData
             Main.account = AccountHelper(data.userName, data.password)
             val root = ChatsList.load(context)
-            Main.stage = new PrimaryStage {
-              title = "Welcome"
-              scene = new Scene(root)
-          }
+          //   Main.stage = new PrimaryStage {
+          //     title = "Welcome"
+          //     scene = new Scene(root)
+          // }
         }
         result.failed.foreach(t => {
             img.visible = true

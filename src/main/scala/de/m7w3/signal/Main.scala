@@ -34,7 +34,6 @@ object Main extends JFXApp {
       DeviceRegistration.load(appContext)
     }
 
-    // val root = UnlockDB.load(appContext)
     stage = new PrimaryStage {
       title = "Welcome"
       scene = new Scene(root)

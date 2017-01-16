@@ -14,7 +14,7 @@ import scala.util.{Failure, Success, Try}
 class ApplicationContextRule extends ExternalResource with StoreResource {
 
   private val context: AtomicReference[ApplicationContext] = new AtomicReference[ApplicationContext]()
-  private val defaultPassword = "foo"
+  val defaultPassword = "foo"
   override def before(): Unit = {
     super.before()
     setupResource()

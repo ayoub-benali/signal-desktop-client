@@ -19,7 +19,7 @@ class ApplicationContextRule extends ExternalResource with StoreResource {
     super.before()
     setupResource()
     context.set(
-      new ApplicationContext(SignalDesktopConfig(verbose=true, 1.seconds, new File("foo"))){
+      new ApplicationContext(SignalDesktopConfig(verbose=false, 1.seconds, new File("foo"))){
         override def profileDirExists: Boolean = true
         override def profileIsInitialized: Boolean = true
         override def createNewProtocolStore(password: String): SignalDesktopProtocolStore = protocolStore

@@ -23,7 +23,7 @@ addCompilerPlugin("org.scalamacros" %% "paradise" % "2.1.0" cross CrossVersion.f
 resolvers += "jitpack" at "https://jitpack.io"
 
 libraryDependencies ++= Seq(
-  "com.github.turasa"         % "signal-service-java"  % "2.4.1_unofficial_1",
+  "com.github.turasa"         % "signal-service-java"  % "2.4.2_unofficial_1",
   "com.github.kenglxn.QRGen"  % "javase"               % "2.2.0",
   "org.bouncycastle"          % "bcprov-jdk16"         % "1.46",
   "com.github.scopt"          %% "scopt"               % "3.5.0",
@@ -33,10 +33,10 @@ libraryDependencies ++= Seq(
   "org.scalacheck"            %% "scalacheck"          % "1.13.4"       % Test,
   "org.scalatest"             %% "scalatest"           % "3.0.1"        % Test,
   "junit"                     % "junit"                % "4.12"         % Test,
-  "org.testfx"                % "testfx-core"          % "4.0.4-alpha"  % Test,
-  "org.testfx"                % "testfx-junit"         % "4.0.4-alpha"  % Test,
+  "org.testfx"                % "testfx-core"          % "4.0.5-alpha"  % Test,
+  "org.testfx"                % "testfx-junit"         % "4.0.5-alpha"  % Test,
   "org.testfx"                % "openjfx-monocle"      % "1.8.0_20"     % Test,
-  "org.slf4j"                 % "slf4j-api"            % "1.7.21",
+  "org.slf4j"                 % "slf4j-api"            % "1.7.22",
   "org.apache.logging.log4j"  % "log4j-slf4j-impl"     % "2.7",
   "org.apache.logging.log4j"  % "log4j-api"            % "2.7",
   "org.apache.logging.log4j"  % "log4j-core"           % "2.7",

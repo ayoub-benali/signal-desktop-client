@@ -1,53 +1,59 @@
 package de.m7w3.signal.controller
 
-import de.m7w3.signal.{Main, AccountHelper, ApplicationContext}
+import de.m7w3.signal.{AccountHelper, ApplicationContext, Main}
+
+import org.slf4j.LoggerFactory
+import scala.util.Try
 import scalafx.Includes._
-import scalafx.application.JFXApp.PrimaryStage
 import scalafx.application.Platform
 import scalafx.event.ActionEvent
-import scalafx.scene.{Parent, Scene}
-import scalafx.scene.control.{PasswordField, Label, Button}
-import scala.util.Try
+import scalafx.geometry.Insets
+import scalafx.scene.Parent
+import scalafx.scene.control.{Button, Label, PasswordField}
 import scalafx.scene.image.ImageView
 import scalafx.scene.layout.GridPane
-import scalafx.geometry.Insets
 
 object UnlockDB {
+  private val logger = LoggerFactory.getLogger(getClass)
 
   def load(context: ApplicationContext): Parent = {
 
-    val img =  new ImageView(this.getClass().getResource("/images/circle-x.png").toString())
-    val button = new Button("Unlock")
+    val img = new ImageView(this.getClass.getResource("/images/circle-x.png").toString)
+    img.id = "errorImage"
+    val button = new Button{
+      text = "Unlock"
+      id = "unlock"
+    }
     val password = new PasswordField{
+      id = "password"
       promptText = "Password"
       prefColumnCount = 10
-      text.onChange{button.disable = text.toString().trim.isEmpty}
+      text.onChange {
+        button.disable = text.toString().trim.isEmpty
+      }
     }
     img.visible = false
     button.disable = true
     button.defaultButtonProperty().bind(password.focusedProperty())
     button.onAction = (a: ActionEvent) => {
       button.disable = true
+      img.visible = false
       Platform.runLater{
         val result: Try[Unit] = for{
           s <- context.tryLoadExistingStore(password.getText(), skipCache = true)
-          data <- Try(s.getRegistrationData)
-        } yield{
+          data <- Try(s.getRegistrationData())
+        } yield {
+            // TODO: don't use Main here, use the passed-in application context
             Main.store = s
-            val data = s.getRegistrationData
             Main.account = AccountHelper(data.userName, data.password)
             val root = ChatsList.load(context)
-            Main.stage = new PrimaryStage {
-              title = "Welcome"
-              scene = new Scene(root)
-          }
+            button.getScene.setRoot(root)
         }
         result.failed.foreach(t => {
-            img.visible = true
-            button.disable = true
-            t.printStackTrace()
-          }
-        )
+          img.visible = true
+          button.disable = true
+          logger.error("login failure: ", t)
+        })
       }
     }
 

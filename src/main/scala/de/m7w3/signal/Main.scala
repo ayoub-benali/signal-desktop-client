@@ -6,7 +6,7 @@ import java.security.Security
 
 import org.whispersystems.libsignal.logging.SignalProtocolLoggerProvider
 
-import scalafx.Includes._
+
 import scalafx.application.JFXApp
 import scalafx.application.JFXApp.PrimaryStage
 import scalafx.scene.Scene
@@ -33,8 +33,6 @@ object Main extends JFXApp {
       // show welcome and registration screen
       DeviceRegistration.load(appContext)
     }
-
-    // val root = UnlockDB.load(appContext)
     stage = new PrimaryStage {
       title = "Welcome"
       scene = new Scene(root)

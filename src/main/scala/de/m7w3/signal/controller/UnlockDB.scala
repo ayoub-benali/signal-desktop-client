@@ -2,7 +2,8 @@ package de.m7w3.signal.controller
 
 import de.m7w3.signal.{AccountHelper, ApplicationContext, Main}
 
-import scala.util.{Failure, Success, Try}
+import org.slf4j.LoggerFactory
+import scala.util.Try
 import scalafx.Includes._
 import scalafx.application.Platform
 import scalafx.event.ActionEvent
@@ -13,6 +14,7 @@ import scalafx.scene.image.ImageView
 import scalafx.scene.layout.GridPane
 
 object UnlockDB {
+  private val logger = LoggerFactory.getLogger(getClass)
 
   def load(context: ApplicationContext): Parent = {
 
@@ -47,15 +49,11 @@ object UnlockDB {
             val root = ChatsList.load(context)
             button.getScene.setRoot(root)
         }
-        result match {
-          case Success(_) =>
-            img.visible = false
-            button.disable = false
-          case Failure(t) =>
-            img.visible = true
-            button.disable = true
-            t.printStackTrace()
-        }
+        result.failed.foreach(t => {
+          img.visible = true
+          button.disable = true
+          logger.error("login failure: ", t)
+        })
       }
     }
 

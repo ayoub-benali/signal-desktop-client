@@ -4,6 +4,8 @@ import java.io.ByteArrayInputStream
 import java.net.InetAddress
 
 import de.m7w3.signal.controller.MainView
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
+
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -63,7 +65,6 @@ object DeviceRegistration{
       def oneFieldEmpty(): Boolean = deviceName.text.value.trim.isEmpty || userId.text.value.trim.isEmpty || dbPassword.text.value.trim.isEmpty
 
       ok.onAction = (a: ActionEvent) => {
-        println("pressed")
         Future {
           val password = Util.getSecret(20)
           val account = AccountHelper(userId.getText(), password)

@@ -11,6 +11,7 @@ import org.whispersystems.signalservice.api.crypto.SignalServiceCipher
 import org.whispersystems.signalservice.api.messages.{SignalServiceContent, SignalServiceEnvelope}
 import org.whispersystems.signalservice.api.push.SignalServiceAddress
 import org.whispersystems.signalservice.api.{SignalServiceMessagePipe, SignalServiceMessageReceiver}
+
 import org.whispersystems.signalservice.internal.push.SignalServiceUrl
 
 import scala.annotation.tailrec
@@ -21,10 +22,6 @@ import scala.concurrent.ExecutionContext
   */
 case class MessageReceiver(protocolStore: SignalDesktopProtocolStore,
                            messageHandler: MessageHandler,
-                           username: String,
-                           password: String,
-                           deviceId: Int,
-                           signalingKey: String,
                            timeoutMillis: Long) {
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
@@ -33,17 +30,19 @@ case class MessageReceiver(protocolStore: SignalDesktopProtocolStore,
   }
   val ec: ExecutionContext = ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(1, threadFactory))
   val keepOnRockin: AtomicBoolean = new AtomicBoolean(false)
+  private val registration = protocolStore.getRegistrationData()
+  private val userName = registration.userName
   val service = new SignalServiceUrl(Constants.URL, LocalKeyStore)
   val messageReceiver = new SignalServiceMessageReceiver(
     Array(service),
-    username,
-    password,
-    deviceId,
-    signalingKey,
+    userName,
+    registration.password,
+    registration.deviceId,
+    registration.signalingKey,
     Constants.USER_AGENT)
 
   ec.execute(new Runnable {
-    override def run() = {
+    override def run(): Unit = {
       receiveMessages()
     }
   })
@@ -70,9 +69,7 @@ case class MessageReceiver(protocolStore: SignalDesktopProtocolStore,
       } else if (envelope.isSignalMessage) {
         logger.debug(s"got signalmessage from ${envelope.getSourceAddress} ${envelope.getSourceDevice}")
       }
-
       val content = decryptMessage(envelope)
-
 
       if (content.getDataMessage.isPresent) {
         messageHandler.handleDataMessage(envelope, content.getDataMessage.get())
@@ -90,11 +87,10 @@ case class MessageReceiver(protocolStore: SignalDesktopProtocolStore,
     } else {
       logger.info("stopped receiving messages.")
     }
-
   }
 
   private def decryptMessage(envelope: SignalServiceEnvelope): SignalServiceContent = {
-    val cipher = new SignalServiceCipher(new SignalServiceAddress(username), protocolStore)
+    val cipher = new SignalServiceCipher(new SignalServiceAddress(userName), protocolStore)
     cipher.decrypt(envelope)
   }
 }

@@ -42,10 +42,12 @@ case class AccountHelper(userId: String, password: String) extends Logging {
       val username = ret.getNumber
       val identity = Identity(deviceId, ret.getIdentity.serialize())
       store.identityKeyStore.initialize(identity)
-      refreshPreKeys(store)
-      requestSyncGroups(deviceId, store)
-      requestSyncContacts(deviceId, store)
       store.save(username, deviceId, password, signalingKey)
+
+      refreshPreKeys(store)
+      //requestSyncGroups(deviceId, store)
+      requestSyncContacts(deviceId, store)
+
   }
 
   def refreshPreKeys(store: SignalDesktopProtocolStore): Unit = {

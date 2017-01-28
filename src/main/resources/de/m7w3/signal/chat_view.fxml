@@ -11,7 +11,7 @@
     <children>
         <ScrollPane minWidth="600.0" minHeight="600.0">
             <content>
-                <ListView />
+                <ListView fx:id="chatMsgView" />
             </content>
         </ScrollPane>
         <SplitPane dividerPositions="0.5">

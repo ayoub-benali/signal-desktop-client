@@ -12,6 +12,7 @@ import scalafx.scene.Parent
 import scalafx.scene.control.{Button, Label, PasswordField}
 import scalafx.scene.image.ImageView
 import scalafx.scene.layout.GridPane
+import scala.util.Success
 
 object UnlockDB {
   private val logger = LoggerFactory.getLogger(getClass)
@@ -46,10 +47,17 @@ object UnlockDB {
             val account = AccountHelper(data.userName, data.password)
             val initiatedContext = ApplicationContextBuilder.setStore(s)
             .setAccount(account)
+            .setInitialContext(context)
             .build()
 
-            val root = ChatsList.load(initiatedContext)
-            button.getScene.setRoot(root)
+            initiatedContext match {
+              case Success(c) => {
+                val root = ChatsList.load(c)
+                button.getScene.setRoot(root)
+              }
+              case _ => // TODO log exception
+            }
+
         }
         result.failed.foreach(t => {
           img.visible = true

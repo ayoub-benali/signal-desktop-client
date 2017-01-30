@@ -20,7 +20,8 @@ import java.net.InetAddress
 
 object DeviceRegistration{
 
-  def load(context: ApplicationContext): Parent = {
+  def load(context: InitialContext): Parent = {
+    var account: AccountHelper = null
 
     object Step1 extends VBox {
       alignment = Pos.Center
@@ -65,12 +66,11 @@ object DeviceRegistration{
         this.setVisible(false)
         Step3.setVisible(true)
         val password = Util.getSecret(20)
-        // TODO: do this in a better way
-        Main.account = AccountHelper(userId.getText(), password)
+        account = AccountHelper(userId.getText(), password)
         //TODO: show a progress bar while the future is not complete
         Platform.runLater{
           println("pressed")
-          Future(QRCodeGenerator.generate(() => Main.account.getNewDeviceURL)).map(outputstream => {
+          Future(QRCodeGenerator.generate(() => account.getNewDeviceURL)).map(outputstream => {
             val image = new Image(new ByteArrayInputStream(outputstream.toByteArray), 300D, 300D, true, true)
             // Step3.add(new ImageView(image), 0, 1)
             val backgroundImage = new BackgroundImage(image, BackgroundRepeat.NoRepeat, BackgroundRepeat.NoRepeat, BackgroundPosition.Center, BackgroundSize.Default)
@@ -103,9 +103,12 @@ object DeviceRegistration{
       finish.disable = true
       finish.onAction = (a: ActionEvent) => Platform.runLater{
         // TODO show a progress bar
-        Main.store = context.createNewProtocolStore(Step2.dbPassword.getText())
-        Main.account.finishDeviceLink(Step2.deviceName.getText(), Main.store)
-        val root = ChatsList.load(context)
+        val store = context.createNewProtocolStore(Step2.dbPassword.getText())
+        account.finishDeviceLink(Step2.deviceName.getText(), store)
+        val initiatedContext = ApplicationContextBuilder.setStore(store)
+        .setAccount(account)
+        .build()
+        val root = ChatsList.load(initiatedContext)
         Main.stage = new PrimaryStage {
           title = "Welcome"
           scene = new Scene(root)

@@ -1,6 +1,6 @@
 package de.m7w3.signal.controller
 
-import de.m7w3.signal.{AccountHelper, ApplicationContext, Main}
+import de.m7w3.signal.{AccountHelper, ApplicationContextBuilder, InitialContext}
 
 import org.slf4j.LoggerFactory
 import scala.util.Try
@@ -16,7 +16,7 @@ import scalafx.scene.layout.GridPane
 object UnlockDB {
   private val logger = LoggerFactory.getLogger(getClass)
 
-  def load(context: ApplicationContext): Parent = {
+  def load(context: InitialContext): Parent = {
 
     val img = new ImageView(this.getClass.getResource("/images/circle-x.png").toString)
     img.id = "errorImage"
@@ -43,10 +43,12 @@ object UnlockDB {
           s <- context.tryLoadExistingStore(password.getText(), skipCache = true)
           data <- Try(s.getRegistrationData())
         } yield {
-            // TODO: don't use Main here, use the passed-in application context
-            Main.store = s
-            Main.account = AccountHelper(data.userName, data.password)
-            val root = ChatsList.load(context)
+            val account = AccountHelper(data.userName, data.password)
+            val initiatedContext = ApplicationContextBuilder.setStore(s)
+            .setAccount(account)
+            .build()
+
+            val root = ChatsList.load(initiatedContext)
             button.getScene.setRoot(root)
         }
         result.failed.foreach(t => {

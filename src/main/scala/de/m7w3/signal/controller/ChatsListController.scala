@@ -6,7 +6,7 @@ import scalafx.scene.control.{Button, ButtonBar}
 import scalafx.scene.layout.AnchorPane
 import scalafxml.core.macros.{nested, sfxml}
 import scalafx.scene.Parent
-import de.m7w3.signal.ApplicationContext
+import de.m7w3.signal.{ApplicationContext, InitiatedContext}
 import scala.reflect.runtime.universe.{Type, typeOf}
 import scalafxml.core.{DependenciesByType, FXMLView}
 
@@ -38,7 +38,7 @@ class ChatsListController(
 }
 
 object ChatsList{
-  def load(context: ApplicationContext): Parent = {
+  def load(context: InitiatedContext): Parent = {
     val dependencies = Map[Type, Any](
       typeOf[ApplicationContext] -> context
     )

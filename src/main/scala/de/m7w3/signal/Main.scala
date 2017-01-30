@@ -1,10 +1,9 @@
 package de.m7w3.signal
 
-import de.m7w3.signal.controller.UnlockDB
 import java.security.Security
 
+import de.m7w3.signal.controller.UnlockDB
 import org.whispersystems.libsignal.logging.SignalProtocolLoggerProvider
-
 
 import scalafx.application.JFXApp
 import scalafx.application.JFXApp.PrimaryStage

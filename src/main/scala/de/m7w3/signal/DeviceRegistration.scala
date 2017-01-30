@@ -6,7 +6,6 @@ import java.net.InetAddress
 import de.m7w3.signal.controller.MainView
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 
-
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.Success
@@ -18,6 +17,17 @@ import scalafx.scene.Parent
 import scalafx.scene.control.{Button, Label, PasswordField, TextField}
 import scalafx.scene.image.Image
 import scalafx.scene.layout._
+import scalafx.scene.layout.{Background, BackgroundImage, BackgroundPosition, BackgroundRepeat, BackgroundSize, GridPane, StackPane, VBox}
+import scalafx.geometry.Insets
+import java.net.InetAddress
+
+import de.m7w3.signal.controller.MainView
+import de.m7w3.signal.messages.{MessageReceiver, SignalDesktopMessageHandler}
+import de.m7w3.signal.store.SignalDesktopApplicationStore
+import org.whispersystems.signalservice.api.SignalServiceMessageReceiver
+import org.whispersystems.signalservice.api.crypto.SignalServiceCipher
+import org.whispersystems.signalservice.api.push.SignalServiceAddress
+import org.whispersystems.signalservice.internal.push.SignalServiceUrl
 
 object DeviceRegistration{
 
@@ -106,8 +116,29 @@ object DeviceRegistration{
       finish.disable = true
       finish.onAction = (a: ActionEvent) => Future {
         // TODO show a progress bar
+
+        val serviceUrl: SignalServiceUrl = new SignalServiceUrl(Constants.URL, LocalKeyStore)
         val store = context.createNewProtocolStore(password)
         account.finishDeviceLink(deviceName, store)
+        val data = store.getRegistrationData()
+        val signalMessageReceiver: SignalServiceMessageReceiver = new SignalServiceMessageReceiver(
+          Array(serviceUrl),
+          data.userName,
+          data.password,
+          data.deviceId,
+          data.signalingKey,
+          Constants.USER_AGENT
+        )
+        val applicationStore = SignalDesktopApplicationStore(store.dbRunner)
+        val messageHandler = new SignalDesktopMessageHandler(applicationStore, signalMessageReceiver)
+        val signalServiceCipher = new SignalServiceCipher(new SignalServiceAddress(data.userName), store)
+        // TODO: keep this around somewhere
+        val messageReceiver = MessageReceiver(
+          signalServiceCipher,
+          signalMessageReceiver,
+          messageHandler,
+          10 * 1000L
+        )
         val initiatedContext = context.newBuilder()
           .setStore(store)
           .setAccount(account)

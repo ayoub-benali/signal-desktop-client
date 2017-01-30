@@ -45,7 +45,7 @@ case class AccountHelper(userId: String, password: String) extends Logging {
       store.save(username, deviceId, password, signalingKey)
 
       refreshPreKeys(store)
-      //requestSyncGroups(deviceId, store)
+      requestSyncGroups(deviceId, store)
       requestSyncContacts(deviceId, store)
 
   }

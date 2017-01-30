@@ -3,7 +3,7 @@ package de.m7w3.signal
 import org.slf4j.LoggerFactory
 
 trait Logging {
-  lazy val logger = LoggerFactory.getLogger(getClass)
+  lazy val logger = LoggerFactory.getLogger("de.m7w3.signal")
 
   def debug(format: String, args: Any*): Unit = {
     logger.debug(format, args)

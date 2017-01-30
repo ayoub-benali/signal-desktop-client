@@ -47,6 +47,8 @@ class ChatsListController(
     scene.setRoot(pane)
     */
   }
+
+  newChatBtn.onAction = this.onNewChat _
 }
 
 

@@ -19,11 +19,11 @@ class SignalDesktopIdentityKeyStoreSpec extends FlatSpec with Matchers with Befo
     protocolStore.getLocalRegistrationId shouldBe localIdentity.registrationId
   }
 
-  it should "consider missing trustedIdentities as not trusted" in {
+  it should "consider missing trustedIdentities as trusted" in {
     protocolStore.identityKeyStore.initialize(localIdentity)
     val address = new SignalProtocolAddress("test", 1)
 
-    protocolStore.isTrustedIdentity(address, remoteIdentity.keyPair.getPublicKey) shouldBe false
+    protocolStore.isTrustedIdentity(address, remoteIdentity.keyPair.getPublicKey) shouldBe true
   }
 
   it should "consider saved identities as trusted" in {
@@ -31,5 +31,12 @@ class SignalDesktopIdentityKeyStoreSpec extends FlatSpec with Matchers with Befo
     val address = new SignalProtocolAddress("test", 1)
     protocolStore.saveIdentity(address, remoteIdentity.keyPair.getPublicKey)
     protocolStore.isTrustedIdentity(address, remoteIdentity.keyPair.getPublicKey) shouldBe true
+  }
+
+  it should "consider different keys as untrusted" in {
+    protocolStore.identityKeyStore.initialize(localIdentity)
+    val address = new SignalProtocolAddress("test", 1)
+    protocolStore.saveIdentity(address, remoteIdentity.keyPair.getPublicKey)
+    protocolStore.isTrustedIdentity(address, anotherIdentity.keyPair.getPublicKey)
   }
 }

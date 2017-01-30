@@ -3,7 +3,6 @@ package de.m7w3.signal.store.model
 import org.whispersystems.libsignal.{IdentityKey, SignalProtocolAddress}
 import slick.driver.H2Driver.api._
 
-case class TrustedKey()
 
 class TrustedKeys(tag: Tag) extends Table[(Int, Array[Byte], Int)](tag, "TRUSTED_KEYS"){
   def id = column[Int]("ID", O.PrimaryKey, O.AutoInc)
@@ -22,6 +21,12 @@ object TrustedKeys {
     trustedKeys.filter(trustedKey => {
       trustedKey.addressId === addressId && trustedKey.pubKey === pubKeyBytes
     }).exists.result
+  }
+
+  def get(address: SignalProtocolAddress) = {
+    val addressId = address.hashCode()
+    val join = trustedKeys join Addresses.addresses on (_.addressId === _.id)
+    join.filter(_._1.addressId === addressId).take(1).result
   }
 
   val trustedKeys = TableQuery[TrustedKeys]

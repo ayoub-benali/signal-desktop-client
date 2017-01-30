@@ -1,7 +1,7 @@
 package de.m7w3.signal.messages
 
 import org.whispersystems.signalservice.api.messages.multidevice.SignalServiceSyncMessage
-import org.whispersystems.signalservice.api.messages.{SignalServiceContent, SignalServiceDataMessage, SignalServiceEnvelope}
+import org.whispersystems.signalservice.api.messages.{SignalServiceDataMessage, SignalServiceEnvelope}
 
 trait MessageHandler {
   def handleSyncMessage(envelope: SignalServiceEnvelope, syncMessage: SignalServiceSyncMessage)

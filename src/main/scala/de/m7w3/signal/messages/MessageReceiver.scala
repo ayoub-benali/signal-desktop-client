@@ -3,16 +3,11 @@ package de.m7w3.signal.messages
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.{Executors, ThreadFactory, TimeUnit, TimeoutException}
 
-import de.m7w3.signal.store.SignalDesktopProtocolStore
-import de.m7w3.signal.{Constants, LocalKeyStore}
-import org.slf4j.{Logger, LoggerFactory}
+import de.m7w3.signal.Logging
 import org.whispersystems.libsignal.InvalidVersionException
 import org.whispersystems.signalservice.api.crypto.SignalServiceCipher
 import org.whispersystems.signalservice.api.messages.{SignalServiceContent, SignalServiceEnvelope}
-import org.whispersystems.signalservice.api.push.SignalServiceAddress
 import org.whispersystems.signalservice.api.{SignalServiceMessagePipe, SignalServiceMessageReceiver}
-
-import org.whispersystems.signalservice.internal.push.SignalServiceUrl
 
 import scala.annotation.tailrec
 import scala.concurrent.ExecutionContext
@@ -20,33 +15,23 @@ import scala.concurrent.ExecutionContext
 /**
   * receives messages on a separate thread and hands them on to a message handler for further processing
   */
-case class MessageReceiver(protocolStore: SignalDesktopProtocolStore,
+case class MessageReceiver(cipher: SignalServiceCipher,
+                           messageReceiver: SignalServiceMessageReceiver,
                            messageHandler: MessageHandler,
-                           timeoutMillis: Long) {
+                           timeoutMillis: Long) extends Logging {
 
-  val logger: Logger = LoggerFactory.getLogger(getClass)
   val threadFactory = new ThreadFactory {
     override def newThread(r: Runnable): Thread = new Thread(r, "signal-desktop-message-receiver")
   }
   val ec: ExecutionContext = ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(1, threadFactory))
-  val keepOnRockin: AtomicBoolean = new AtomicBoolean(false)
-  private val registration = protocolStore.getRegistrationData()
-  private val userName = registration.userName
-  val service = new SignalServiceUrl(Constants.URL, LocalKeyStore)
-  val messageReceiver = new SignalServiceMessageReceiver(
-    Array(service),
-    userName,
-    registration.password,
-    registration.deviceId,
-    registration.signalingKey,
-    Constants.USER_AGENT)
+  val keepOnRockin: AtomicBoolean = new AtomicBoolean(true)
 
+  logger.info("start receiving messages")
   ec.execute(new Runnable {
     override def run(): Unit = {
       receiveMessages()
     }
   })
-
 
   def receiveMessages(): Unit = {
     val messagePipe = messageReceiver.createMessagePipe()
@@ -64,10 +49,13 @@ case class MessageReceiver(protocolStore: SignalDesktopProtocolStore,
 
       if (envelope.isPreKeySignalMessage) {
         logger.debug(s"got prekeys from ${envelope.getSourceAddress} ${envelope.getSourceDevice}")
+        // TODO: handle
       } else if (envelope.isReceipt) {
         logger.debug(s"got receipt from ${envelope.getSourceAddress} ${envelope.getSourceDevice}")
+        // TODO: handle
       } else if (envelope.isSignalMessage) {
         logger.debug(s"got signalmessage from ${envelope.getSourceAddress} ${envelope.getSourceDevice}")
+        // TODO: handle
       }
       val content = decryptMessage(envelope)
 
@@ -75,6 +63,8 @@ case class MessageReceiver(protocolStore: SignalDesktopProtocolStore,
         messageHandler.handleDataMessage(envelope, content.getDataMessage.get())
       } else if (content.getSyncMessage.isPresent) {
         messageHandler.handleSyncMessage(envelope, content.getSyncMessage.get())
+      } else {
+        logger.debug("no content in received message")
       }
     } catch {
       case te: TimeoutException =>
@@ -90,7 +80,6 @@ case class MessageReceiver(protocolStore: SignalDesktopProtocolStore,
   }
 
   private def decryptMessage(envelope: SignalServiceEnvelope): SignalServiceContent = {
-    val cipher = new SignalServiceCipher(new SignalServiceAddress(userName), protocolStore)
     cipher.decrypt(envelope)
   }
 }

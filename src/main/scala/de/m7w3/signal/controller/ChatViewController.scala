@@ -13,7 +13,7 @@ class ChatViewController(sendMsgBtn: Button,
                          applicationContext: ApplicationContext) {
 
   sendMsgBtn.onAction = (a: ActionEvent) => {
-    // store message
+    // send message via central thingy
     // display message in listview
   }
 }

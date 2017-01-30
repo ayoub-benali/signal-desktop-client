@@ -1,7 +1,13 @@
 package de.m7w3.signal.controller
 
-import de.m7w3.signal.{AccountHelper, InitialContext}
+import de.m7w3.signal.messages.{MessageReceiver, SignalDesktopMessageHandler}
+import de.m7w3.signal.store.SignalDesktopApplicationStore
+import de.m7w3.signal.{AccountHelper, InitialContext, _}
 import org.slf4j.LoggerFactory
+import org.whispersystems.signalservice.api.SignalServiceMessageReceiver
+import org.whispersystems.signalservice.api.crypto.SignalServiceCipher
+import org.whispersystems.signalservice.api.push.SignalServiceAddress
+import org.whispersystems.signalservice.internal.push.SignalServiceUrl
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -55,6 +61,23 @@ case class UnlockDB(context: InitialContext) extends GridPane {
           .setStore(s)
           .setAccount(account)
           .build()
+        val signalMessageReceiver: SignalServiceMessageReceiver = new SignalServiceMessageReceiver(
+          Array(new SignalServiceUrl(Constants.URL, LocalKeyStore)),
+          data.userName,
+          data.password,
+          data.deviceId,
+          data.signalingKey,
+          Constants.USER_AGENT
+        )
+        val applicationStore = SignalDesktopApplicationStore(s.dbRunner)
+        val messageHandler = new SignalDesktopMessageHandler(applicationStore, signalMessageReceiver)
+        val signalServiceCipher = new SignalServiceCipher(new SignalServiceAddress(data.userName), s)
+        val messageReceiver = MessageReceiver(
+          signalServiceCipher,
+          signalMessageReceiver,
+          messageHandler,
+          10 * 1000L
+        )
 
         initiatedContext match {
           case Success(c) => Platform.runLater {

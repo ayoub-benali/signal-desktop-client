@@ -31,6 +31,7 @@ object TestUtils {
 trait Identities {
   val localIdentity = TestUtils.generateIdentity
   val remoteIdentity = TestUtils.generateIdentity
+  val anotherIdentity = TestUtils.generateIdentity
 }
 
 trait Addresses {

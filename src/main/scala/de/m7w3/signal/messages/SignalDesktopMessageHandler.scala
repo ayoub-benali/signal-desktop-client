@@ -3,20 +3,24 @@ import java.nio.file.Files
 import java.util
 
 import de.m7w3.signal.Logging
-import de.m7w3.signal.store.DBActionRunner
-import de.m7w3.signal.store.model.Contacts
+import de.m7w3.signal.store.SignalDesktopApplicationStore
 import org.whispersystems.signalservice.api.SignalServiceMessageReceiver
 import org.whispersystems.signalservice.api.messages.multidevice._
 import org.whispersystems.signalservice.api.messages.{SignalServiceAttachment, SignalServiceDataMessage, SignalServiceEnvelope}
 
 import scala.annotation.tailrec
+import scala.collection.JavaConverters.collectionAsScalaIterableConverter
 
-class SignalDesktopMessageHandler(dBActionRunner: DBActionRunner,
+
+class SignalDesktopMessageHandler(signalDesktopApplicationStore: SignalDesktopApplicationStore,
                                   messageReceiver: SignalServiceMessageReceiver) extends MessageHandler with Logging {
 
-  def handleBlockedList(envelope: SignalServiceEnvelope, message: BlockedListMessage) = ???
+  def handleBlockedList(envelope: SignalServiceEnvelope, message: BlockedListMessage) = {
+    logger.debug(s"got blockedlist message [{}]", message.getNumbers.asScala.mkString(", "))
+  }
 
   def handleContacts(envelope: SignalServiceEnvelope, contacts: SignalServiceAttachment): Unit = {
+    logger.debug("received contacts sync message")
     val iStream = if (contacts.isStream) {
       contacts.asStream().getInputStream
     } else {
@@ -32,22 +36,50 @@ class SignalDesktopMessageHandler(dBActionRunner: DBActionRunner,
   private def processContacts(contactsStream: DeviceContactsInputStream): Unit = {
     Option(contactsStream.read()) match {
       case Some(deviceContact: DeviceContact) =>
-        logger.debug("received contact %", deviceContact)
-        dBActionRunner.run(Contacts.insert(deviceContact))
-
+        logger.debug("received contact {}", deviceContact.getNumber)
+        signalDesktopApplicationStore.saveContact(deviceContact)
         processContacts(contactsStream)
       case None =>
         // end
     }
   }
 
-  def handleGroups(envelope: SignalServiceEnvelope, attachment: SignalServiceAttachment) = ???
+  def handleGroups(envelope: SignalServiceEnvelope, attachment: SignalServiceAttachment): Unit = {
+    logger.debug("received groups sync message")
+    val iStream = if (attachment.isStream) {
+      attachment.asStream().getInputStream
+    } else {
+      // TODO: put into local data folder
+      val tmpFile = Files.createTempFile("groups", "groups").toFile
+      tmpFile.deleteOnExit() // maybe do more, delete earlier?
+      messageReceiver.retrieveAttachment(attachment.asPointer(), tmpFile)
+    }
+    val groupsStream = new DeviceGroupsInputStream(iStream)
+    processGroups(groupsStream)
+  }
 
-  def handleRead(envelope: SignalServiceEnvelope, messages: util.List[ReadMessage]) = ???
+  def processGroups(groupsStream: DeviceGroupsInputStream): Unit = {
+    Option(groupsStream.read()) match {
+      case Some(deviceGroup: DeviceGroup) =>
+        logger.debug("received group {}", deviceGroup.getName)
+        signalDesktopApplicationStore.saveGroup(deviceGroup)
+        processGroups(groupsStream)
+      case None =>
+        // end
+    }
+  }
 
-  def handleRequest(envelope: SignalServiceEnvelope, message: RequestMessage) = ???
+  def handleRead(envelope: SignalServiceEnvelope, messages: util.List[ReadMessage]): Unit = {
+    logger.debug("received read message from [{}]", messages.asScala.map(m => m.getSender).mkString(", "))
+  }
 
-  def handleSent(envelope: SignalServiceEnvelope, message: SentTranscriptMessage) = ???
+  def handleRequest(envelope: SignalServiceEnvelope, message: RequestMessage): Unit = {
+    logger.debug("received request message [{}]", message.getRequest)
+  }
+
+  def handleSent(envelope: SignalServiceEnvelope, message: SentTranscriptMessage): Unit = {
+    logger.debug("received sent message [{}: {}]", message.getMessage, message.getTimestamp)
+  }
 
   override def handleSyncMessage(envelope: SignalServiceEnvelope, syncMessage: SignalServiceSyncMessage): Unit = {
     if (syncMessage.getBlockedList.isPresent) {
@@ -66,7 +98,6 @@ class SignalDesktopMessageHandler(dBActionRunner: DBActionRunner,
   }
 
   override def handleDataMessage(envelope: SignalServiceEnvelope, dataMessage: SignalServiceDataMessage): Unit = {
-    error(s"cannot handle data message $dataMessage")
-    ???
+    logger.debug(s"received data message [${dataMessage.getBody} ${dataMessage.getGroupInfo}]")
   }
 }

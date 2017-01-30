@@ -11,7 +11,10 @@ import slick.driver.H2Driver.api._
 
 import scala.util.{Failure, Success, Try}
 
-case class ApplicationContext(config: Config.SignalDesktopConfig) {
+trait ApplicationContext
+
+
+case class InitialContext(config: Config.SignalDesktopConfig) extends ApplicationContext{
 
   private val logger = LoggerFactory.getLogger(getClass)
   val databaseContext = DatabaseContext(config)
@@ -28,6 +31,11 @@ case class ApplicationContext(config: Config.SignalDesktopConfig) {
 
   def profileDirExists: Boolean = config.profileDir.exists()
 
+  def tryLoadExistingStore(password: String, skipCache: Boolean): Try[SignalDesktopProtocolStore] = {
+    databaseContext.dbActionRunner(password, onlyIfExists = true, skipCache)
+      .map(SignalDesktopProtocolStore(_))
+  }
+
   def createNewProtocolStore(password: String): SignalDesktopProtocolStore = {
     databaseContext.dbActionRunner(password, onlyIfExists = false, skipCache = false) match {
       case Failure(t) =>
@@ -38,11 +46,47 @@ case class ApplicationContext(config: Config.SignalDesktopConfig) {
         SignalDesktopProtocolStore(dBActionRunner)
     }
   }
+}
 
-  def tryLoadExistingStore(password: String, skipCache: Boolean): Try[SignalDesktopProtocolStore] = {
-    databaseContext.dbActionRunner(password, onlyIfExists = true, skipCache)
-      .map(SignalDesktopProtocolStore(_))
+case class InitiatedContext(
+  account: AccountHelper,
+  store: SignalDesktopProtocolStore,
+  dbContext: DatabaseContext) extends ApplicationContext
+
+trait ApplicationContextBuilder{
+  def build(): Try[InitiatedContext]
+  def setStore(s: SignalDesktopProtocolStore): ApplicationContextBuilder
+  def setAccount(a: AccountHelper): ApplicationContextBuilder
+  def setInitialContext(c: InitialContext): ApplicationContextBuilder
+
+}
+
+object ApplicationContextBuilder extends ApplicationContextBuilder{
+
+  private var store: Try[SignalDesktopProtocolStore] = Failure(new Exception("protocol store not set"))
+  private var account: Try[AccountHelper] = Failure(new Exception("account not set"))
+  private var context: Try[InitialContext] = Failure(new Exception("initial context not set"))
+
+  def setStore(s: SignalDesktopProtocolStore): ApplicationContextBuilder = {
+    store = Success(s)
+    this
   }
+
+  def setAccount(a: AccountHelper): ApplicationContextBuilder = {
+    account = Success(a)
+    this
+  }
+
+  def setInitialContext(c: InitialContext): ApplicationContextBuilder = {
+    context = Success(c)
+    this
+  }
+
+  def build(): Try[InitiatedContext] = for {
+      c <- context
+      a <- account
+      s <- store
+    } yield InitiatedContext(a, s, c.databaseContext)
 }
 
 case class DatabaseContext(config: Config.SignalDesktopConfig) {

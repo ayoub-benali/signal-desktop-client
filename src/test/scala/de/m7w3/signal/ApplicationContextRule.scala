@@ -13,13 +13,13 @@ import scala.util.{Failure, Success, Try}
 
 class ApplicationContextRule extends ExternalResource with StoreResource {
 
-  private val context: AtomicReference[ApplicationContext] = new AtomicReference[ApplicationContext]()
+  private val context = new AtomicReference[InitialContext]()
   val defaultPassword = "foo"
   override def before(): Unit = {
     super.before()
     setupResource()
     context.set(
-      new ApplicationContext(SignalDesktopConfig(verbose=false, 1.seconds, new File("foo"))){
+      new InitialContext(SignalDesktopConfig(verbose=false, 1.seconds, new File("foo"))){
         override def profileDirExists: Boolean = true
         override def profileIsInitialized: Boolean = true
         override def createNewProtocolStore(password: String): SignalDesktopProtocolStore = protocolStore
@@ -34,7 +34,7 @@ class ApplicationContextRule extends ExternalResource with StoreResource {
     super.after()
   }
 
-  def get(): ApplicationContext = {
+  def get(): InitialContext = {
     val ctx = context.get()
     require(ctx != null, "ApplicationCOntext not yet initialized")
     ctx

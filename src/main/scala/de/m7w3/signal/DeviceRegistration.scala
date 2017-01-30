@@ -17,25 +17,25 @@ import scalafx.scene.image.Image
 import scalafx.scene.layout.{Background, BackgroundImage, BackgroundPosition, BackgroundRepeat, BackgroundSize, StackPane, VBox, GridPane}
 import scalafx.geometry.Insets
 import java.net.InetAddress
+import scala.util.Success
 
 object DeviceRegistration{
 
-  def load(context: ApplicationContext): Parent = {
+  def load(context: InitialContext): Parent = {
 
-    object Step1 extends VBox {
+    case class Step1() extends VBox {
       alignment = Pos.Center
       private val hello = new Label("Hello")
       private val appRequired = new Label("You must have Signal for Android for using this client")
       private val haveApp = new Button("I have Signal for Android")
       haveApp.defaultButtonProperty().bind(haveApp.focusedProperty())
       haveApp.onAction = (a: ActionEvent) => {
-        this.setVisible(false)
-        Step2.setVisible(true)
+        this.getScene().setRoot(Step2())
       }
       this.children = List(hello, appRequired, haveApp)
     }
 
-    object Step2 extends GridPane {
+    case class Step2() extends GridPane {
       val ok = new Button("Register")
       ok.disable = true
 
@@ -62,27 +62,24 @@ object DeviceRegistration{
       def oneFieldEmpty(): Boolean = deviceName.text.value.trim.isEmpty || userId.text.value.trim.isEmpty || dbPassword.text.value.trim.isEmpty
 
       ok.onAction = (a: ActionEvent) => {
-        this.setVisible(false)
-        Step3.setVisible(true)
         val password = Util.getSecret(20)
-        // TODO: do this in a better way
-        Main.account = AccountHelper(userId.getText(), password)
+        val account = AccountHelper(userId.getText(), password)
         //TODO: show a progress bar while the future is not complete
         Platform.runLater{
           println("pressed")
-          Future(QRCodeGenerator.generate(() => Main.account.getNewDeviceURL)).map(outputstream => {
+          Future(QRCodeGenerator.generate(() => account.getNewDeviceURL)).map(outputstream => {
             val image = new Image(new ByteArrayInputStream(outputstream.toByteArray), 300D, 300D, true, true)
-            // Step3.add(new ImageView(image), 0, 1)
+            val step = Step3(account, dbPassword.getText(), deviceName.getText())
             val backgroundImage = new BackgroundImage(image, BackgroundRepeat.NoRepeat, BackgroundRepeat.NoRepeat, BackgroundPosition.Center, BackgroundSize.Default)
-            Step3.qrCode.setBackground(new Background(Array(backgroundImage)))
-            Step3.finish.disable = false
+            step.qrCode.setBackground(new Background(Array(backgroundImage)))
+            step.finish.disable = false
+            this.getScene().setRoot(step)
           })
         }
       }
       ok.defaultButtonProperty().bind(dbPassword.focusedProperty())
 
       alignment = Pos.Center
-      visible = false
       hgap = 10
       vgap = 20
       padding = Insets(20, 150, 10, 10)
@@ -95,7 +92,8 @@ object DeviceRegistration{
       add(ok, 0, 3)
     }
 
-    object Step3 extends GridPane{
+    case class Step3(account: AccountHelper, password: String, deviceName: String) extends GridPane{
+
       val qrCode = new StackPane
       qrCode.prefWidth = 300D
       qrCode.prefHeight = 300D
@@ -103,19 +101,30 @@ object DeviceRegistration{
       finish.disable = true
       finish.onAction = (a: ActionEvent) => Platform.runLater{
         // TODO show a progress bar
-        Main.store = context.createNewProtocolStore(Step2.dbPassword.getText())
-        Main.account.finishDeviceLink(Step2.deviceName.getText(), Main.store)
-        val root = ChatsList.load(context)
-        Main.stage = new PrimaryStage {
-          title = "Welcome"
-          scene = new Scene(root)
+        val store = context.createNewProtocolStore(password)
+        account.finishDeviceLink(deviceName, store)
+        val initiatedContext = ApplicationContextBuilder.setStore(store)
+        .setAccount(account)
+        .setInitialContext(context)
+        .build()
+
+        initiatedContext match {
+          case Success(c) => {
+            val root = ChatsList.load(c)
+            Main.stage = new PrimaryStage {
+              title = "Welcome"
+              scene = new Scene(root)
+            }
+          }
+          case _ => {
+            //TODO: log exception
+          }
         }
       }
       finish.defaultButtonProperty().bind(finish.focusedProperty())
 
 
       alignment = Pos.Center
-      visible = false
       hgap = 10
       vgap = 20
       padding = Insets(20, 150, 10, 10)
@@ -124,9 +133,6 @@ object DeviceRegistration{
       add(finish, 0, 2)
     }
 
-    val stack = new StackPane
-    stack.alignment = Pos.Center
-    stack.children = List(Step1, Step2, Step3)
-    stack
+    Step1()
   }
 }

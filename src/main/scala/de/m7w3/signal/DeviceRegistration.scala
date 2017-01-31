@@ -1,23 +1,21 @@
 package de.m7w3.signal
 
 import java.io.ByteArrayInputStream
+import java.net.InetAddress
+
+import de.m7w3.signal.controller.ChatsList
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-
-import de.m7w3.signal.controller.ChatsList
+import scala.util.Success
 import scalafx.Includes._
-import scalafx.application.JFXApp.PrimaryStage
 import scalafx.application.Platform
 import scalafx.event.ActionEvent
-import scalafx.geometry.Pos
-import scalafx.scene.{Parent, Scene}
+import scalafx.geometry.{Insets, Pos}
+import scalafx.scene.Parent
 import scalafx.scene.control.{Button, Label, PasswordField, TextField}
 import scalafx.scene.image.Image
-import scalafx.scene.layout.{Background, BackgroundImage, BackgroundPosition, BackgroundRepeat, BackgroundSize, StackPane, VBox, GridPane}
-import scalafx.geometry.Insets
-import java.net.InetAddress
-import scala.util.Success
+import scalafx.scene.layout._
 
 object DeviceRegistration{
 
@@ -25,6 +23,9 @@ object DeviceRegistration{
 
     case class Step1() extends VBox {
       alignment = Pos.Center
+      minHeight = 400
+      minWidth = 600
+
       private val hello = new Label("Hello")
       private val appRequired = new Label("You must have Signal for Android for using this client")
       private val haveApp = new Button("I have Signal for Android")
@@ -111,11 +112,9 @@ object DeviceRegistration{
         .build()
 
         initiatedContext match {
-          case Success(c) => {
-            Platform.runLater {
-              val root = ChatsList.load(c)
-              this.getScene.setRoot(root)
-            }
+          case Success(c) => Platform.runLater {
+            val root = ChatsList.load(c)
+            this.getScene.setRoot(root)
           }
           case _ => {
             //TODO: log exception
@@ -123,7 +122,6 @@ object DeviceRegistration{
         }
       }
       finish.defaultButtonProperty().bind(finish.focusedProperty())
-
 
       alignment = Pos.Center
       hgap = 10

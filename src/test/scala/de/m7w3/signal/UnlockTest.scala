@@ -24,7 +24,7 @@ class UnlockTest extends ApplicationTest with JUnitSuiteLike with AssertionsForJ
   def applicationContext: ApplicationContextRule = internalApplicationContext
 
   override def start(stage: Stage): Unit = {
-    val root = UnlockDB.load(internalApplicationContext.get())
+    val root = UnlockDB(internalApplicationContext.get())
     val scene = new Scene(root)
     val sStage = new SStage(stage)
     sStage.setScene(scene)

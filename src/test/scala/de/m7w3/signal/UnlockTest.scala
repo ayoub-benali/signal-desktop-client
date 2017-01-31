@@ -55,6 +55,5 @@ class UnlockTest extends ApplicationTest with JUnitSuiteLike with AssertionsForJ
     verifyThat("#unlock", isEnabled)
     clickOn("#unlock")
     WaitForAsyncUtils.waitForFxEvents()
-    verifyThat("#errorImage", isInvisible)
   }
 }

@@ -50,11 +50,11 @@ class UnlockTest extends ApplicationTest with JUnitSuiteLike with AssertionsForJ
     verifyThat("#unlock", isDisabled)
     verifyThat("#errorImage", isInvisible)
     val store = applicationContext.get().createNewProtocolStore(applicationContext.defaultPassword)
-    store.save("foo", 1, "bar", "baz")
+    store.save("user", 1, applicationContext.defaultPassword, "baz")
     clickOn("#password").write(applicationContext.defaultPassword)
     verifyThat("#unlock", isEnabled)
     clickOn("#unlock")
     WaitForAsyncUtils.waitForFxEvents()
-    verifyThat("#errorImage", isNull)
+    verifyThat("#errorImage", isInvisible)
   }
 }

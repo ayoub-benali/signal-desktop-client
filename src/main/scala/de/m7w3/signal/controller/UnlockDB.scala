@@ -1,8 +1,9 @@
 package de.m7w3.signal.controller
 
 import de.m7w3.signal.{AccountHelper, ApplicationContextBuilder, InitialContext}
-
 import org.slf4j.LoggerFactory
+
+import scala.concurrent.Future
 import scala.util.Try
 import scalafx.Includes._
 import scalafx.application.Platform
@@ -18,6 +19,8 @@ object UnlockDB {
   private val logger = LoggerFactory.getLogger(getClass)
 
   def load(context: InitialContext): Parent = {
+
+    import scala.concurrent.ExecutionContext.Implicits.global
 
     val img = new ImageView(this.getClass.getResource("/images/circle-x.png").toString)
     img.id = "errorImage"
@@ -39,8 +42,8 @@ object UnlockDB {
     button.onAction = (a: ActionEvent) => {
       button.disable = true
       img.visible = false
-      Platform.runLater{
-        val result: Try[Unit] = for{
+      Future {
+        val result: Try[Unit] = for {
           s <- context.tryLoadExistingStore(password.getText(), skipCache = true)
           data <- Try(s.getRegistrationData())
         } yield {
@@ -52,12 +55,13 @@ object UnlockDB {
 
             initiatedContext match {
               case Success(c) => {
-                val root = ChatsList.load(c)
-                button.getScene.setRoot(root)
+                Platform.runLater {
+                  val root = ChatsList.load(c)
+                  button.getScene.setRoot(root)
+                }
               }
               case _ => // TODO log exception
             }
-
         }
         result.failed.foreach(t => {
           img.visible = true

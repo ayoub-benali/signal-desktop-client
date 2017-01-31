@@ -30,7 +30,7 @@ object DeviceRegistration{
       private val haveApp = new Button("I have Signal for Android")
       haveApp.defaultButtonProperty().bind(haveApp.focusedProperty())
       haveApp.onAction = (a: ActionEvent) => {
-        this.getScene().setRoot(Step2())
+        this.getScene.setRoot(Step2())
       }
       this.children = List(hello, appRequired, haveApp)
     }
@@ -39,7 +39,7 @@ object DeviceRegistration{
       val ok = new Button("Register")
       ok.disable = true
 
-      val hostname = scala.util.Try(InetAddress.getLocalHost()).map(_.getHostName())
+      val hostname = scala.util.Try(InetAddress.getLocalHost).map(_.getHostName())
 
       val deviceName = new TextField{
         promptText = hostname.map(h => s"signal client on $h").getOrElse("")
@@ -62,19 +62,21 @@ object DeviceRegistration{
       def oneFieldEmpty(): Boolean = deviceName.text.value.trim.isEmpty || userId.text.value.trim.isEmpty || dbPassword.text.value.trim.isEmpty
 
       ok.onAction = (a: ActionEvent) => {
-        val password = Util.getSecret(20)
-        val account = AccountHelper(userId.getText(), password)
-        //TODO: show a progress bar while the future is not complete
-        Platform.runLater{
-          println("pressed")
-          Future(QRCodeGenerator.generate(() => account.getNewDeviceURL)).map(outputstream => {
-            val image = new Image(new ByteArrayInputStream(outputstream.toByteArray), 300D, 300D, true, true)
-            val step = Step3(account, dbPassword.getText(), deviceName.getText())
-            val backgroundImage = new BackgroundImage(image, BackgroundRepeat.NoRepeat, BackgroundRepeat.NoRepeat, BackgroundPosition.Center, BackgroundSize.Default)
-            step.qrCode.setBackground(new Background(Array(backgroundImage)))
-            step.finish.disable = false
-            this.getScene().setRoot(step)
-          })
+        println("pressed")
+        Future {
+          val password = Util.getSecret(20)
+          val account = AccountHelper(userId.getText(), password)
+          //TODO: show a progress bar while the future is not complete
+          val outputStream = QRCodeGenerator.generate(() => account.getNewDeviceURL())
+          val image = new Image(new ByteArrayInputStream(outputStream.toByteArray), 300D, 300D, true, true)
+
+          val step = Step3(account, dbPassword.getText(), deviceName.getText())
+          val backgroundImage = new BackgroundImage(image, BackgroundRepeat.NoRepeat, BackgroundRepeat.NoRepeat, BackgroundPosition.Center, BackgroundSize.Default)
+          step.qrCode.setBackground(new Background(Array(backgroundImage)))
+          step.finish.disable = false
+          Platform.runLater {
+            this.getScene.setRoot(step)
+          }
         }
       }
       ok.defaultButtonProperty().bind(dbPassword.focusedProperty())
@@ -99,7 +101,7 @@ object DeviceRegistration{
       qrCode.prefHeight = 300D
       val finish = new Button("Finish")
       finish.disable = true
-      finish.onAction = (a: ActionEvent) => Platform.runLater{
+      finish.onAction = (a: ActionEvent) => Future {
         // TODO show a progress bar
         val store = context.createNewProtocolStore(password)
         account.finishDeviceLink(deviceName, store)
@@ -110,10 +112,9 @@ object DeviceRegistration{
 
         initiatedContext match {
           case Success(c) => {
-            val root = ChatsList.load(c)
-            Main.stage = new PrimaryStage {
-              title = "Welcome"
-              scene = new Scene(root)
+            Platform.runLater {
+              val root = ChatsList.load(c)
+              this.getScene.setRoot(root)
             }
           }
           case _ => {

@@ -24,7 +24,7 @@ object Main extends JFXApp {
   signalDesktopConfig.foreach { config =>
     val appContext = InitialContext(config)
     val root = if (appContext.profileDirExists && appContext.profileIsInitialized) {
-      UnlockDB.load(appContext)
+      UnlockDB(appContext)
     } else {
       // show welcome and registration screen
       DeviceRegistration.load(appContext)

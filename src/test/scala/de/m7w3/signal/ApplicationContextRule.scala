@@ -15,6 +15,7 @@ class ApplicationContextRule extends ExternalResource with StoreResource {
 
   private val context = new AtomicReference[InitialContext]()
   val defaultPassword = "foo"
+
   override def before(): Unit = {
     super.before()
     setupResource()

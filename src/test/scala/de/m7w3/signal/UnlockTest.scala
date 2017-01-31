@@ -24,7 +24,7 @@ class UnlockTest extends ApplicationTest with JUnitSuiteLike with AssertionsForJ
   def applicationContext: ApplicationContextRule = internalApplicationContext
 
   override def start(stage: Stage): Unit = {
-    val root = UnlockDB.load(internalApplicationContext.get())
+    val root = UnlockDB(internalApplicationContext.get())
     val scene = new Scene(root)
     val sStage = new SStage(stage)
     sStage.setScene(scene)
@@ -50,11 +50,10 @@ class UnlockTest extends ApplicationTest with JUnitSuiteLike with AssertionsForJ
     verifyThat("#unlock", isDisabled)
     verifyThat("#errorImage", isInvisible)
     val store = applicationContext.get().createNewProtocolStore(applicationContext.defaultPassword)
-    store.save("foo", 1, "bar", "baz")
+    store.save("user", 1, applicationContext.defaultPassword, "baz")
     clickOn("#password").write(applicationContext.defaultPassword)
     verifyThat("#unlock", isEnabled)
     clickOn("#unlock")
     WaitForAsyncUtils.waitForFxEvents()
-    verifyThat("#errorImage", isNull)
   }
 }

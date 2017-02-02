@@ -3,11 +3,15 @@ package de.m7w3.signal.messages
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.{Executors, ThreadFactory, TimeUnit, TimeoutException}
 
-import de.m7w3.signal.Logging
+import de.m7w3.signal.store.{SignalDesktopApplicationStore, SignalDesktopProtocolStore}
+import de.m7w3.signal.{Constants, LocalKeyStore, Logging}
+import de.m7w3.signal.store.model.Registration
 import org.whispersystems.libsignal.InvalidVersionException
 import org.whispersystems.signalservice.api.crypto.SignalServiceCipher
 import org.whispersystems.signalservice.api.messages.{SignalServiceContent, SignalServiceEnvelope}
+import org.whispersystems.signalservice.api.push.SignalServiceAddress
 import org.whispersystems.signalservice.api.{SignalServiceMessagePipe, SignalServiceMessageReceiver}
+import org.whispersystems.signalservice.internal.push.SignalServiceUrl
 
 import scala.annotation.tailrec
 import scala.concurrent.ExecutionContext
@@ -81,5 +85,29 @@ case class MessageReceiver(cipher: SignalServiceCipher,
 
   private def decryptMessage(envelope: SignalServiceEnvelope): SignalServiceContent = {
     cipher.decrypt(envelope)
+  }
+}
+
+object MessageReceiver {
+
+  def initialize(protocolStore: SignalDesktopProtocolStore,
+                 applicationStore: SignalDesktopApplicationStore): MessageReceiver = {
+    val data: Registration = protocolStore.getRegistrationData()
+    val signalMessageReceiver: SignalServiceMessageReceiver = new SignalServiceMessageReceiver(
+      Array(new SignalServiceUrl(Constants.URL, LocalKeyStore)),
+      data.userName,
+      data.password,
+      data.deviceId,
+      data.signalingKey,
+      Constants.USER_AGENT
+    )
+    val messageHandler = new SignalDesktopMessageHandler(applicationStore, signalMessageReceiver)
+    val signalServiceCipher = new SignalServiceCipher(new SignalServiceAddress(data.userName), protocolStore)
+    MessageReceiver(
+      signalServiceCipher,
+      signalMessageReceiver,
+      messageHandler,
+      10 * 1000L
+    )
   }
 }

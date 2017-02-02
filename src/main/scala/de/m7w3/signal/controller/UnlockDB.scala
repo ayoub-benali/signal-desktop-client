@@ -1,17 +1,12 @@
 package de.m7w3.signal.controller
 
-import de.m7w3.signal.messages.{MessageReceiver, SignalDesktopMessageHandler}
-import de.m7w3.signal.store.SignalDesktopApplicationStore
-import de.m7w3.signal.{AccountHelper, InitialContext, _}
+import de.m7w3.signal.ContextBuilder
+import de.m7w3.signal.messages.MessageReceiver
 import org.slf4j.LoggerFactory
-import org.whispersystems.signalservice.api.SignalServiceMessageReceiver
-import org.whispersystems.signalservice.api.crypto.SignalServiceCipher
-import org.whispersystems.signalservice.api.push.SignalServiceAddress
-import org.whispersystems.signalservice.internal.push.SignalServiceUrl
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import scala.util.{Success, Try}
+import scala.util.{Failure, Success}
 import scalafx.Includes._
 import scalafx.application.Platform
 import scalafx.event.ActionEvent
@@ -20,7 +15,7 @@ import scalafx.scene.control.{Button, Label, PasswordField}
 import scalafx.scene.image.ImageView
 import scalafx.scene.layout.GridPane
 
-case class UnlockDB(context: InitialContext) extends GridPane {
+case class UnlockDB(context: ContextBuilder) extends GridPane {
 
   private val logger = LoggerFactory.getLogger(getClass)
 
@@ -52,46 +47,18 @@ case class UnlockDB(context: InitialContext) extends GridPane {
     button.disable = true
     img.visible = false
     Future {
-      val result: Try[Unit] = for {
-        s <- context.tryLoadExistingStore(password.getText(), skipCache = true)
-        data <- Try(s.getRegistrationData())
-      } yield {
-        val account = AccountHelper(data.userName, data.password)
-        val initiatedContext = context.newBuilder()
-          .setStore(s)
-          .setAccount(account)
-          .build()
-        val signalMessageReceiver: SignalServiceMessageReceiver = new SignalServiceMessageReceiver(
-          Array(new SignalServiceUrl(Constants.URL, LocalKeyStore)),
-          data.userName,
-          data.password,
-          data.deviceId,
-          data.signalingKey,
-          Constants.USER_AGENT
-        )
-        val applicationStore = SignalDesktopApplicationStore(s.dbRunner)
-        val messageHandler = new SignalDesktopMessageHandler(applicationStore, signalMessageReceiver)
-        val signalServiceCipher = new SignalServiceCipher(new SignalServiceAddress(data.userName), s)
-        val messageReceiver = MessageReceiver(
-          signalServiceCipher,
-          signalMessageReceiver,
-          messageHandler,
-          10 * 1000L
-        )
-
-        initiatedContext match {
-          case Success(c) => Platform.runLater {
+      context.buildWithExistingStore(password.getText()) match {
+        case Success(c) =>
+          MessageReceiver.initialize(c.protocolStore, c.applicationStore)
+          Platform.runLater {
             val root = MainView.load(c)
             this.getScene.setRoot(root)
           }
-          case _ => // TODO log exception
-        }
+        case Failure(t) =>
+          img.visible = true
+          button.disable = true
+          logger.error("login failure: ", t)
       }
-      result.failed.foreach(t => {
-        img.visible = true
-        button.disable = true
-        logger.error("login failure: ", t)
-      })
     }
   }
 

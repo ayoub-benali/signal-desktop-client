@@ -13,5 +13,6 @@ object Schema {
                TrustedKeys.trustedKeys.schema ++
                RegistrationData.registrationData.schema ++
                Contacts.contacts.schema ++
-               Groups.groups.schema
+               Groups.groups.schema ++
+               GroupMembers.groupMembers.schema
 }

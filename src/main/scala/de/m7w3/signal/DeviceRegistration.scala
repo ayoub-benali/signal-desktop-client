@@ -1,10 +1,10 @@
 package de.m7w3.signal
 
-import java.io.ByteArrayInputStream
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 import java.net.InetAddress
 
 import de.m7w3.signal.controller.MainView
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
+import de.m7w3.signal.messages.MessageReceiver
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -17,21 +17,10 @@ import scalafx.scene.Parent
 import scalafx.scene.control.{Button, Label, PasswordField, TextField}
 import scalafx.scene.image.Image
 import scalafx.scene.layout._
-import scalafx.scene.layout.{Background, BackgroundImage, BackgroundPosition, BackgroundRepeat, BackgroundSize, GridPane, StackPane, VBox}
-import scalafx.geometry.Insets
-import java.net.InetAddress
-
-import de.m7w3.signal.controller.MainView
-import de.m7w3.signal.messages.{MessageReceiver, SignalDesktopMessageHandler}
-import de.m7w3.signal.store.SignalDesktopApplicationStore
-import org.whispersystems.signalservice.api.SignalServiceMessageReceiver
-import org.whispersystems.signalservice.api.crypto.SignalServiceCipher
-import org.whispersystems.signalservice.api.push.SignalServiceAddress
-import org.whispersystems.signalservice.internal.push.SignalServiceUrl
 
 object DeviceRegistration{
 
-  def load(context: InitialContext): Parent = {
+  def load(context: ContextBuilder): Parent = {
 
     case class Step1() extends VBox {
       alignment = Pos.Center
@@ -81,13 +70,9 @@ object DeviceRegistration{
           //TODO: show a progress bar while the future is not complete
           val generateUrl: () => String = () => account.getNewDeviceURL
           val outputStream = QRCodeGenerator.generate(generateUrl)
-          val image = new Image(new ByteArrayInputStream(outputStream.toByteArray), 300D, 300D, true, true)
 
-          val step = Step3(account, dbPassword.getText(), deviceName.getText())
-          val backgroundImage = new BackgroundImage(image, BackgroundRepeat.NoRepeat, BackgroundRepeat.NoRepeat, BackgroundPosition.Center, BackgroundSize.Default)
-          step.qrCode.setBackground(new Background(Array(backgroundImage)))
-          step.finish.disable = false
           Platform.runLater {
+            val step = Step3(account, dbPassword.getText(), deviceName.getText(), outputStream)
             this.getScene.setRoot(step)
           }
         }
@@ -107,48 +92,26 @@ object DeviceRegistration{
       add(ok, 0, 3)
     }
 
-    case class Step3(account: AccountHelper, password: String, deviceName: String) extends GridPane{
+    case class Step3(account: AccountHelper, password: String, deviceName: String, outputStream: ByteArrayOutputStream) extends GridPane{
+      val image = new Image(new ByteArrayInputStream(outputStream.toByteArray), 300D, 300D, true, true)
+      val backgroundImage = new BackgroundImage(image, BackgroundRepeat.NoRepeat, BackgroundRepeat.NoRepeat, BackgroundPosition.Center, BackgroundSize.Default)
 
       val qrCode = new StackPane
       qrCode.prefWidth = 300D
       qrCode.prefHeight = 300D
+      qrCode.setBackground(new Background(Array(backgroundImage)))
+
       val finish = new Button("Finish")
-      finish.disable = true
       finish.onAction = (a: ActionEvent) => Future {
         // TODO show a progress bar
-
-        val serviceUrl: SignalServiceUrl = new SignalServiceUrl(Constants.URL, LocalKeyStore)
-        val store = context.createNewProtocolStore(password)
-        account.finishDeviceLink(deviceName, store)
-        val data = store.getRegistrationData()
-        val signalMessageReceiver: SignalServiceMessageReceiver = new SignalServiceMessageReceiver(
-          Array(serviceUrl),
-          data.userName,
-          data.password,
-          data.deviceId,
-          data.signalingKey,
-          Constants.USER_AGENT
-        )
-        val applicationStore = SignalDesktopApplicationStore(store.dbRunner)
-        val messageHandler = new SignalDesktopMessageHandler(applicationStore, signalMessageReceiver)
-        val signalServiceCipher = new SignalServiceCipher(new SignalServiceAddress(data.userName), store)
-        // TODO: keep this around somewhere
-        val messageReceiver = MessageReceiver(
-          signalServiceCipher,
-          signalMessageReceiver,
-          messageHandler,
-          10 * 1000L
-        )
-        val initiatedContext = context.newBuilder()
-          .setStore(store)
-          .setAccount(account)
-          .build()
-
-        initiatedContext match {
-          case Success(c) => Platform.runLater {
-            val root = MainView.load(c)
-            this.getScene.setRoot(root)
-          }
+        context.buildWithNewStore(account, password) match {
+          case Success(c) =>
+            account.finishDeviceLink(deviceName, c.protocolStore)
+            MessageReceiver.initialize(c.protocolStore, c.applicationStore)
+            Platform.runLater {
+              val root = MainView.load(c)
+              this.getScene.setRoot(root)
+            }
           case _ => {
             //TODO: log exception
           }

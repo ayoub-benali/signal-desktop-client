@@ -59,7 +59,6 @@ class ChatEntryListCell(appCtx: ApplicationContext) extends ListCell[ChatEntry] 
     typeOf[ApplicationContext] -> appCtx
   )
   item.onChange { (observable, oldValue, newValue) =>
-    print(s"$newValue")
     if (newValue != null) {
       val dependencies = baseDependencies + (typeOf[ChatEntry] -> newValue)
       graphic = FXMLView(fxmlUri, new DependenciesByType(dependencies))

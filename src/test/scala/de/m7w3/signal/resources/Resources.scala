@@ -1,6 +1,6 @@
 package de.m7w3.signal.resources
 
-import de.m7w3.signal.store.{DBActionRunner, DatabaseLoader, SignalDesktopApplicationStore, SignalDesktopProtocolStore}
+import de.m7w3.signal.store.{DBActionRunner, SignalDesktopApplicationStore, SignalDesktopProtocolStore}
 import de.m7w3.signal.store.model.Schema
 import slick.driver.H2Driver.api._
 

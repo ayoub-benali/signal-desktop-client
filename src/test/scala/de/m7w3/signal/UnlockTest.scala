@@ -1,14 +1,12 @@
 package de.m7w3.signal
 
-import java.security.Security
 import java.util.concurrent.TimeUnit
 import javafx.scene.Node
 import javafx.stage.Stage
 
 import de.m7w3.signal.controller.UnlockDB
 import de.m7w3.signal.exceptions.DatabaseDoesNotExistException
-import org.bouncycastle.jce.provider.BouncyCastleProvider
-import org.junit.{Rule, Test}
+import org.junit.Test
 import org.mockito.{ArgumentMatchers, Mockito}
 import org.scalatest.junit.{AssertionsForJUnit, JUnitSuiteLike}
 import org.scalatest.mockito.MockitoSugar

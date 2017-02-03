@@ -23,7 +23,6 @@ case class AccountHelper(userId: String, password: String) extends Logging {
 
   val PREKEY_BATCH_SIZE = 100
   // some init to create a SignalServiceAccountManager
-  lazy val temporaryIdentity = KeyHelper.generateIdentityKeyPair()
   val service = new SignalServiceUrl(Constants.URL, LocalKeyStore)
   val accountManager = new SignalServiceAccountManager(Array(service), userId, password, Constants.USER_AGENT)
 

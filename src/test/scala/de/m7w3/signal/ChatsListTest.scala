@@ -1,15 +1,10 @@
 package de.m7w3.signal
 
-import java.security.Security
 import javafx.stage.Stage
 
-import de.m7w3.signal.Config.SignalDesktopConfig
-import de.m7w3.signal.store.Addresses
-import org.bouncycastle.jce.provider.BouncyCastleProvider
-import org.junit.rules.{TemporaryFolder, TestRule}
-import org.junit.{Rule, Test}
+import org.junit.Test
 import org.scalatest.junit.{AssertionsForJUnit, JUnitSuiteLike}
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.testfx.api.FxAssert._
 import org.testfx.framework.junit.ApplicationTest
 import org.testfx.matcher.base.NodeMatchers._

@@ -23,7 +23,7 @@ object AttachmentHelpers {
   def arrayToStream(array: Array[Byte]): SignalServiceAttachmentStream = {
     SignalServiceAttachment.newStreamBuilder()
       .withStream(new ByteArrayInputStream(array))
-      .withLength(array.length)
+      .withLength(array.length.toLong)
       .withContentType("application/octet-stream")
       .build()
   }

@@ -51,6 +51,7 @@ class DatabaseLoaderSpec extends FlatSpec with Matchers {
       a [DatabaseDoesNotExistException] should be thrownBy db.get
     } finally {
       Files.deleteIfExists(pDir)
+      ()
     }
   }
 }

@@ -1,23 +1,21 @@
 package de.m7w3.signal.controller
 
-import de.m7w3.signal.controller.UnlockDB.getClass
-import de.m7w3.signal.{AccountHelper, ApplicationContextBuilder, InitialContext}
+import de.m7w3.signal.ContextBuilder
+import de.m7w3.signal.messages.MessageReceiver
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import scala.util.Try
+import scala.util.{Failure, Success}
 import scalafx.Includes._
 import scalafx.application.Platform
 import scalafx.event.ActionEvent
 import scalafx.geometry.Insets
-import scalafx.scene.Parent
 import scalafx.scene.control.{Button, Label, PasswordField}
 import scalafx.scene.image.ImageView
 import scalafx.scene.layout.GridPane
-import scala.util.Success
 
-case class UnlockDB(context: InitialContext) extends GridPane {
+case class UnlockDB(context: ContextBuilder) extends GridPane {
 
   private val logger = LoggerFactory.getLogger(getClass)
 
@@ -49,29 +47,18 @@ case class UnlockDB(context: InitialContext) extends GridPane {
     button.disable = true
     img.visible = false
     Future {
-      val result: Try[Unit] = for {
-        s <- context.tryLoadExistingStore(password.getText(), skipCache = true)
-        data <- Try(s.getRegistrationData())
-      } yield {
-        val account = AccountHelper(data.userName, data.password)
-        val initiatedContext = ApplicationContextBuilder.setStore(s)
-          .setAccount(account)
-          .setInitialContext(context)
-          .build()
-
-        initiatedContext match {
-          case Success(c) => Platform.runLater {
-            val root = ChatsList.load(c)
-            button.getScene.setRoot(root)
+      context.buildWithExistingStore(password.getText()) match {
+        case Success(c) =>
+          MessageReceiver.initialize(c.protocolStore, c.applicationStore)
+          Platform.runLater {
+            val root = MainView.load(c)
+            this.getScene.setRoot(root)
           }
-          case _ => // TODO log exception
-        }
+        case Failure(t) =>
+          img.visible = true
+          button.disable = true
+          logger.error("login failure: ", t)
       }
-      result.failed.foreach(t => {
-        img.visible = true
-        button.disable = true
-        logger.error("login failure: ", t)
-      })
     }
   }
 

@@ -1,6 +1,6 @@
 package de.m7w3.signal.resources
 
-import de.m7w3.signal.store.{DBActionRunner, SignalDesktopProtocolStore}
+import de.m7w3.signal.store.{DBActionRunner, SignalDesktopApplicationStore, SignalDesktopProtocolStore}
 import de.m7w3.signal.store.model.Schema
 import slick.driver.H2Driver.api._
 
@@ -38,10 +38,12 @@ trait DatabaseResource extends TestResource {
 trait StoreResource extends DatabaseResource {
 
   var protocolStore: SignalDesktopProtocolStore = _
+  var applicationStore: SignalDesktopApplicationStore = _
 
   override def setupResource(): Unit = {
     super.setupResource()
     protocolStore = SignalDesktopProtocolStore(dbActionRunner)
+    applicationStore = SignalDesktopApplicationStore(dbActionRunner)
   }
 }
 

@@ -1,6 +1,6 @@
 package de.m7w3.signal.store
 
-import de.m7w3.signal.store.model.{Addresses, Identity, LocalIdentity, TrustedKeys}
+import de.m7w3.signal.store.model._
 import org.whispersystems.libsignal.state.IdentityKeyStore
 import org.whispersystems.libsignal.{IdentityKey, IdentityKeyPair, SignalProtocolAddress}
 import slick.driver.H2Driver.api._
@@ -38,8 +38,14 @@ case class SignalDesktopIdentityKeyStore(dbRunner: DBActionRunner) extends Ident
   }
 
   override def isTrustedIdentity(address: SignalProtocolAddress, identityKey: IdentityKey): Boolean = {
-    val existsAction = TrustedKeys.exists(address, identityKey)
-    dbRunner.run(existsAction)
+    val identities = dbRunner.run(TrustedKeys.get(address))
+    identities match {
+      case Seq(((_, pubKey: Array[Byte], _), address: Address), xs @ _*) =>
+        val dbKey = new IdentityKey(pubKey, 0)
+        dbKey.equals(identityKey) // not trusted if not equal
+      case Seq() =>
+        true // trust on first use
+    }
   }
 
   override def getLocalRegistrationId: Int = {

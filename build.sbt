@@ -14,7 +14,8 @@ scalacOptions := Vector(
   "-Xlint", "-Yno-adapted-args", "-Ywarn-dead-code",
   "-Ywarn-numeric-widen", "-Ywarn-value-discard", "-Ywarn-inaccessible",
   "-Ywarn-nullary-override", "-Ywarn-nullary-unit", "-Ywarn-unused-import",
-  "-Dscala.usejavacp=true"
+  "-Dscala.usejavacp=true",
+  "-language:_"
 )
 
 // needed for scalafxml
@@ -36,6 +37,7 @@ libraryDependencies ++= Seq(
   "org.testfx"                % "testfx-core"          % "4.0.5-alpha"  % Test,
   "org.testfx"                % "testfx-junit"         % "4.0.5-alpha"  % Test,
   "org.testfx"                % "openjfx-monocle"      % "1.8.0_20"     % Test,
+  "org.mockito"               % "mockito-core"         % "2.7.1"        % Test,
   "org.slf4j"                 % "slf4j-api"            % "1.7.22",
   "org.apache.logging.log4j"  % "log4j-slf4j-impl"     % "2.7",
   "org.apache.logging.log4j"  % "log4j-api"            % "2.7",

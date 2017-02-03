@@ -11,5 +11,8 @@ object Schema {
                SignedPreKeys.signedPreKeys.schema ++
                SignedPreKeys.idSequence.schema ++
                TrustedKeys.trustedKeys.schema ++
-               RegistrationData.registrationData.schema
+               RegistrationData.registrationData.schema ++
+               Contacts.contacts.schema ++
+               Groups.groups.schema ++
+               GroupMembers.groupMembers.schema
 }

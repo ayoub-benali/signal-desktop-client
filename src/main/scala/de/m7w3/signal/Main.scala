@@ -1,10 +1,9 @@
 package de.m7w3.signal
 
-import de.m7w3.signal.controller.UnlockDB
 import java.security.Security
 
+import de.m7w3.signal.controller.UnlockDB
 import org.whispersystems.libsignal.logging.SignalProtocolLoggerProvider
-
 
 import scalafx.application.JFXApp
 import scalafx.application.JFXApp.PrimaryStage
@@ -22,7 +21,7 @@ object Main extends JFXApp {
 
   val signalDesktopConfig = Config.optionParser.parse(parameters.raw, Config.SignalDesktopConfig())
   signalDesktopConfig.foreach { config =>
-    val appContext = InitialContext(config)
+    val appContext = ContextBuilder(config)
     val root = if (appContext.profileDirExists && appContext.profileIsInitialized) {
       UnlockDB(appContext)
     } else {

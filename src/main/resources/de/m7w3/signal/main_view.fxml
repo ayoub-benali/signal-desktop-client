@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.m7w3.signal.controller.MainViewController">
+    <top>
+        <MenuBar fx:id="mainMenu">
+            <menus>
+                <fx:include fx:id="fileMenu" source="file_menu.fxml" />
+                <fx:include fx:id="editMenu" source="edit_menu.fxml" />
+                <fx:include fx:id="helpMenu" source="help_menu.fxml" />
+            </menus>
+        </MenuBar>
+    </top>
+    <center>
+      <HBox BorderPane.alignment="CENTER">
+         <children>
+             <fx:include fx:id="chatsList" source="recent_chats_list.fxml" />
+             <fx:include fx:id="chatView" source="chat_view.fxml" />
+         </children>
+      </HBox>
+    </center>
+</BorderPane>

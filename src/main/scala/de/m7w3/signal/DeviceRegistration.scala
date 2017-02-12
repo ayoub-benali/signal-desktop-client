@@ -22,7 +22,7 @@ object DeviceRegistration{
 
   def load(context: ContextBuilder): Parent = {
 
-    case class Step1() extends VBox {
+    case class Step1() extends VBox with Logging {
       alignment = Pos.Center
       minHeight = 400
       minWidth = 600
@@ -32,12 +32,13 @@ object DeviceRegistration{
       private val haveApp = new Button("I have Signal for Android")
       haveApp.defaultButtonProperty().bind(haveApp.focusedProperty())
       haveApp.onAction = (a: ActionEvent) => {
+        logger.debug("loading Step 2 UI...")
         this.getScene.setRoot(Step2())
       }
       this.children = List(hello, appRequired, haveApp)
     }
 
-    case class Step2() extends GridPane {
+    case class Step2() extends GridPane with Logging {
       val ok = new Button("Register")
       ok.disable = true
 
@@ -70,8 +71,9 @@ object DeviceRegistration{
           //TODO: show a progress bar while the future is not complete
           val generateUrl: () => String = () => account.getNewDeviceURL
           val outputStream = QRCodeGenerator.generate(generateUrl)
-
+          logger.debug("QR code created from new deviceURL")
           Platform.runLater {
+            logger.debug("launching Step 3 UI...")
             val step = Step3(account, dbPassword.getText(), deviceName.getText(), outputStream)
             this.getScene.setRoot(step)
           }

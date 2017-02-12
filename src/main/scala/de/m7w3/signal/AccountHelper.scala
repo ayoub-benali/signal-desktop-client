@@ -38,7 +38,7 @@ case class AccountHelper(userId: String, password: String) extends Logging {
       val ret = accountManager.finishNewDeviceRegistration(TemporaryIdentity.get, signalingKey, false, true, temporaryRegistrationId, deviceName)
       val deviceId = ret.getDeviceId
       val username = ret.getNumber
-      val identity = Identity(deviceId, ret.getIdentity.serialize())
+      val identity = Identity(temporaryRegistrationId, ret.getIdentity.serialize())
       store.identityKeyStore.initialize(identity)
       store.save(username, deviceId, password, signalingKey)
 

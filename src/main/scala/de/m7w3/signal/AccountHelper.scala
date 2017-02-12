@@ -13,7 +13,7 @@ import org.whispersystems.libsignal.util.guava.Optional
 import org.whispersystems.libsignal.util.{KeyHelper, Medium}
 import org.whispersystems.signalservice.api.crypto.UntrustedIdentityException
 import org.whispersystems.signalservice.api.messages.multidevice.{RequestMessage, SignalServiceSyncMessage}
-import org.whispersystems.signalservice.api.{SignalServiceAccountManager, SignalServiceMessageSender}
+import org.whispersystems.signalservice.api.{SignalServiceAccountManager, SignalServiceMessagePipe, SignalServiceMessageSender}
 import org.whispersystems.signalservice.internal.push.{SignalServiceProtos, SignalServiceUrl}
 import org.whispersystems.signalservice.internal.util.Base64
 
@@ -23,8 +23,7 @@ case class AccountHelper(userId: String, password: String) extends Logging {
 
   val PREKEY_BATCH_SIZE = 100
   // some init to create a SignalServiceAccountManager
-  val service = new SignalServiceUrl(Constants.URL, LocalKeyStore)
-  val accountManager = new SignalServiceAccountManager(Array(service), userId, password, Constants.USER_AGENT)
+  val accountManager = new SignalServiceAccountManager(Constants.SERVICE_URLS, userId, password, Constants.USER_AGENT)
 
   def getNewDeviceURL: String = {
     val uuid = URLEncoder.encode(accountManager.getNewDeviceUuid, "UTF-8")
@@ -39,7 +38,7 @@ case class AccountHelper(userId: String, password: String) extends Logging {
       val ret = accountManager.finishNewDeviceRegistration(TemporaryIdentity.get, signalingKey, false, true, temporaryRegistrationId, deviceName)
       val deviceId = ret.getDeviceId
       val username = ret.getNumber
-      val identity = Identity(deviceId, ret.getIdentity.serialize())
+      val identity = Identity(temporaryRegistrationId, ret.getIdentity.serialize())
       store.identityKeyStore.initialize(identity)
       store.save(username, deviceId, password, signalingKey)
 
@@ -93,7 +92,7 @@ case class AccountHelper(userId: String, password: String) extends Logging {
                               deviceId: Int,
                               store: SignalDesktopProtocolStore) {
     val messageSender = new SignalServiceMessageSender(
-      Array(service),
+      Constants.SERVICE_URLS,
       userId,
       password,
       deviceId,

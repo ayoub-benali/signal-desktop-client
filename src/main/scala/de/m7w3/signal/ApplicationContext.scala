@@ -1,7 +1,9 @@
 package de.m7w3.signal
 
+import de.m7w3.signal.events.{EventDispatcher, EventPublisher, SignalDesktopEventDispatcher}
 import de.m7w3.signal.store.model.Schema
 import de.m7w3.signal.store.{DBActionRunner, DatabaseLoader, SignalDesktopApplicationStore, SignalDesktopProtocolStore}
+import monix.reactive.Observable
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.core.config.Configurator
 import org.slf4j.LoggerFactory
@@ -12,7 +14,7 @@ import scala.util.Try
 trait ApplicationContext
 
 
-case class ContextBuilder(config: Config.SignalDesktopConfig) extends ApplicationContext{
+case class ContextBuilder(config: Config.SignalDesktopConfig) {
 
   private val logger = LoggerFactory.getLogger(getClass)
   val databaseLoader = DatabaseLoader(config.profileDir.getAbsolutePath)
@@ -37,7 +39,12 @@ case class ContextBuilder(config: Config.SignalDesktopConfig) extends Applicatio
         val applicationStore = SignalDesktopApplicationStore(dbRunner)
         val regData = protocolStore.getRegistrationData()
         val accountHelper = AccountHelper(regData.userName, regData.password)
-        InitiatedContext(accountHelper, dbRunner, protocolStore, applicationStore)
+        InitiatedContext(
+          accountHelper,
+          dbRunner,
+          protocolStore,
+          applicationStore
+        )
       })
   }
 
@@ -54,7 +61,11 @@ case class ContextBuilder(config: Config.SignalDesktopConfig) extends Applicatio
       }).map(dbRunner => {
         val store = SignalDesktopProtocolStore(dbRunner)
         val applicationStore = SignalDesktopApplicationStore(dbRunner)
-        InitiatedContext(accountHelper, dbRunner, store, applicationStore)
+        InitiatedContext(
+          accountHelper,
+          dbRunner,
+          store,
+          applicationStore)
     })
   }
 }
@@ -62,7 +73,7 @@ case class ContextBuilder(config: Config.SignalDesktopConfig) extends Applicatio
 case class InitiatedContext(account: AccountHelper,
                             dBActionRunner: DBActionRunner,
                             protocolStore: SignalDesktopProtocolStore,
-                            applicationStore: SignalDesktopApplicationStore) extends ApplicationContext
+                            applicationStore: SignalDesktopApplicationStore) extends SignalDesktopEventDispatcher with ApplicationContext
 
 
 

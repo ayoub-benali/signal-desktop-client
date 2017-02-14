@@ -28,6 +28,7 @@ libraryDependencies ++= Seq(
   "com.github.kenglxn.QRGen"  % "javase"               % "2.2.0",
   "org.bouncycastle"          % "bcprov-jdk16"         % "1.46",
   "com.github.scopt"          %% "scopt"               % "3.5.0",
+  "io.monix"                  %% "monix"               % "2.2.1",
   "org.scalafx"               %% "scalafx"             % "8.0.102-R11",
   "org.scalafx"               %% "scalafxml-core-sfx8" % "0.3",
   "org.controlsfx"            %  "controlsfx"          % "8.40.12",

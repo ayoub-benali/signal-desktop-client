@@ -49,7 +49,7 @@ case class UnlockDB(context: ContextBuilder) extends GridPane {
     Future {
       context.buildWithExistingStore(password.getText()) match {
         case Success(c) =>
-          MessageReceiver.initialize(c.protocolStore, c.applicationStore)
+          MessageReceiver.initialize(c)
           Platform.runLater {
             val root = MainView.load(c)
             this.getScene.setRoot(root)

@@ -20,7 +20,7 @@ import scalafx.scene.layout._
 
 object DeviceRegistration{
 
-  def load(context: ContextBuilder): Parent = {
+  def load(contextBuilder: ContextBuilder): Parent = {
 
     case class Step1() extends VBox with Logging {
       alignment = Pos.Center
@@ -106,10 +106,10 @@ object DeviceRegistration{
       val finish = new Button("Finish")
       finish.onAction = (a: ActionEvent) => Future {
         // TODO show a progress bar
-        context.buildWithNewStore(account, password) match {
+        contextBuilder.buildWithNewStore(account, password) match {
           case Success(c) =>
             account.finishDeviceLink(deviceName, c.protocolStore)
-            MessageReceiver.initialize(c.protocolStore, c.applicationStore)
+            MessageReceiver.initialize(c)
             Platform.runLater {
               val root = MainView.load(c)
               this.getScene.setRoot(root)

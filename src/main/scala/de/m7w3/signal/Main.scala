@@ -21,12 +21,12 @@ object Main extends JFXApp {
 
   val signalDesktopConfig = Config.optionParser.parse(parameters.raw, Config.SignalDesktopConfig())
   signalDesktopConfig.foreach { config =>
-    val appContext = ContextBuilder(config)
-    val root = if (appContext.profileDirExists && appContext.profileIsInitialized) {
-      UnlockDB(appContext)
+    val ctxBuilder = ContextBuilder(config)
+    val root = if (ctxBuilder.profileDirExists && ctxBuilder.profileIsInitialized) {
+      UnlockDB(ctxBuilder)
     } else {
       // show welcome and registration screen
-      DeviceRegistration.load(appContext)
+      DeviceRegistration.load(ctxBuilder)
     }
     stage = new PrimaryStage {
       title = "Welcome"

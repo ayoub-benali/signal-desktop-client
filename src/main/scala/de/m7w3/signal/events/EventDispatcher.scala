@@ -31,17 +31,9 @@ class SignalDesktopEventDispatcher extends EventPublisher with EventDispatcher {
   private val subject: ConcurrentSubject[SignalDesktopEvent, SignalDesktopEvent] =
     ConcurrentSubject.publish[SignalDesktopEvent](overflowStrategy)
 
-  override def publishEvent(event: SignalDesktopEvent): Future[Ack] = {
-    subject.onNext(event)
-  }
+  override def publishEvent(event: SignalDesktopEvent): Future[Ack] = subject.onNext(event)
 
-  override def register(listener: EventListener): Cancelable = {
-    // it's duplicated logic here but it is more efficient to do it here instead
-    // of inside the listener and we don't want the listeners being called
-    // for every possible event
-    subject.filter((event) => listener.handle.isDefinedAt(event))
-           .subscribe(listener)
-  }
+  override def register(listener: EventListener): Cancelable = subject.subscribe(listener)
 
   def finish(): Unit = subject.onComplete()
 }

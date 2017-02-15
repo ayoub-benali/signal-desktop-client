@@ -15,12 +15,9 @@ class SignalDesktopEventDispatcherSpec extends FlatSpec with Matchers {
 
   it should "deliver events to registered listener" in {
     val dispatcher = new SignalDesktopEventDispatcher()
-    val listener = new CountingEventListener
+    val listener = CountingEventListener()
     val registration = dispatcher.register(listener)
-    val event = new SignalDesktopEvent {
-      override def eventType = "foo"
-    }
-
+    val event = TestEvent("foo")
     val events = Observable.repeat(event).take(10)
     val cancelable = events.foreach(
       dispatcher.publishEvent(_)
@@ -31,20 +28,14 @@ class SignalDesktopEventDispatcherSpec extends FlatSpec with Matchers {
 
   it should "only dispatch requested events" in {
     val dispatcher = new SignalDesktopEventDispatcher()
-    val fooListener = new CountingEventListener
-    val barListener = new CountingEventListener
-    val fooRegistration = dispatcher.register(fooListener, "foo")
-    val barRegistration = dispatcher.register(barListener, "bar")
+    val fooListener = CountingEventListener(Some("foo"))
+    val barListener = CountingEventListener(Some("bar"))
+    val fooRegistration = dispatcher.register(fooListener)
+    val barRegistration = dispatcher.register(barListener)
 
-    val fooEvent = new SignalDesktopEvent {
-      override def eventType = "foo"
-    }
-    val barEvent = new SignalDesktopEvent {
-      override def eventType = "bar"
-    }
-    val bazEvent = new SignalDesktopEvent {
-      override def eventType = "baz"
-    }
+    val fooEvent = TestEvent("foo")
+    val barEvent = TestEvent("bar")
+    val bazEvent = TestEvent("baz")
 
     val events = Observable.concat(
       Observable.repeat(fooEvent).take(11),
@@ -59,11 +50,18 @@ class SignalDesktopEventDispatcherSpec extends FlatSpec with Matchers {
     barListener.count shouldBe 12L
   }
 
-  class CountingEventListener extends SimpleEventListener {
+  case class TestEvent(eventType: String) extends SignalDesktopEvent
+
+  case class CountingEventListener(consider: Option[String] = None) extends SimpleEventListener {
     private val counter = Atomic(0L)
-    override def onEvent(event: SignalDesktopEvent): Unit = {
-      counter.increment()
-    }
+
+    override def handle: PartialFunction[SignalDesktopEvent, Unit] = {
+      case TestEvent(eventType) =>
+        if (consider.forall(_ == eventType)) {
+          counter.increment()
+        }
+      }
+
     def count: Long = counter.get
   }
 }

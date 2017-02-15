@@ -7,20 +7,22 @@ import monix.reactive.Observer
 
 import scala.concurrent.Future
 
-trait EventListener extends Observer[SignalDesktopEvent]
+trait EventListener extends Observer[SignalDesktopEvent] {
+  def handle: PartialFunction[SignalDesktopEvent, Unit]
+
+  override def onNext(elem: SignalDesktopEvent): Future[Ack] = {
+    if (handle.isDefinedAt(elem)) {
+      handle.apply(elem)
+    }
+    Continue
+  }
+}
 
 /**
   * very simplified observer that always returns "Continue"
   * and does not do any means to ensure backpressure
   */
 abstract class SimpleEventListener(val name: String = getClass.getSimpleName) extends EventListener with Logging {
-
-  def onEvent(event: SignalDesktopEvent): Unit
-
-  override def onNext(elem: SignalDesktopEvent): Future[Ack] = {
-    onEvent(elem)
-    Continue
-  }
 
   override def onError(ex: Throwable): Unit = {
     logger.error(s"Error in event listener $name", ex)
@@ -32,9 +34,9 @@ abstract class SimpleEventListener(val name: String = getClass.getSimpleName) ex
 }
 
 object EventListener {
-  def simple(onEvent: (SignalDesktopEvent) => Unit): EventListener = {
+  def simple(onEvent: PartialFunction[SignalDesktopEvent, Unit]): EventListener = {
     new SimpleEventListener() {
-      override def onEvent(event: SignalDesktopEvent): Unit = onEvent _
+      override def handle: PartialFunction[SignalDesktopEvent, Unit] = onEvent
     }
   }
 }

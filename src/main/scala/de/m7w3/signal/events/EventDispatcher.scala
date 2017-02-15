@@ -17,7 +17,7 @@ trait EventPublisher {
 }
 
 trait EventDispatcher {
-  def register(listener: EventListener, forTypes: String*): Cancelable
+  def register(listener: EventListener): Cancelable
 }
 
 class SignalDesktopEventDispatcher extends EventPublisher with EventDispatcher {
@@ -35,13 +35,12 @@ class SignalDesktopEventDispatcher extends EventPublisher with EventDispatcher {
     subject.onNext(event)
   }
 
-  override def register(listener: EventListener, forTypes: String*): Cancelable = {
-    val observable = if (forTypes.isEmpty) {
-      subject // no filtering if no types were given
-    } else {
-      subject.filter((event) => forTypes.contains(event.eventType))
-    }
-    observable.subscribe(listener)
+  override def register(listener: EventListener): Cancelable = {
+    // it's duplicated logic here but it is more efficient to do it here instead
+    // of inside the listener and we don't want the listeners being called
+    // for every possible event
+    subject.filter((event) => listener.handle.isDefinedAt(event))
+           .subscribe(listener)
   }
 
   def finish(): Unit = subject.onComplete()

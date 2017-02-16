@@ -3,16 +3,13 @@ package de.m7w3.signal.messages
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.{Executors, ThreadFactory, TimeUnit, TimeoutException}
 
-import de.m7w3.signal.store.{SignalDesktopApplicationStore, SignalDesktopProtocolStore}
-import de.m7w3.signal.{Constants, InitiatedContext, LocalKeyStore, Logging}
+import de.m7w3.signal.events.{EventPublisher, PreKeyEvent, ReceiptEvent}
 import de.m7w3.signal.store.model.Registration
+import de.m7w3.signal.{Constants, InitiatedContext, Logging}
 import org.whispersystems.libsignal.InvalidVersionException
 import org.whispersystems.signalservice.api.crypto.SignalServiceCipher
-import org.whispersystems.signalservice.api.messages.{SignalServiceContent, SignalServiceEnvelope}
 import org.whispersystems.signalservice.api.push.SignalServiceAddress
 import org.whispersystems.signalservice.api.{SignalServiceMessagePipe, SignalServiceMessageReceiver}
-import org.whispersystems.signalservice.internal.push.SignalServiceProtos.Content
-import org.whispersystems.signalservice.internal.push.SignalServiceUrl
 
 import scala.annotation.tailrec
 import scala.concurrent.ExecutionContext
@@ -23,6 +20,7 @@ import scala.concurrent.ExecutionContext
 case class MessageReceiver(cipher: SignalServiceCipher,
                            messageReceiver: SignalServiceMessageReceiver,
                            messageHandler: MessageHandler,
+                           eventPublisher: EventPublisher,
                            timeoutMillis: Long) extends Logging {
 
   val threadFactory = new ThreadFactory {
@@ -53,7 +51,9 @@ case class MessageReceiver(cipher: SignalServiceCipher,
       val envelope = pipe.read(timeoutMillis, TimeUnit.MILLISECONDS)
 
       if (envelope.isReceipt) {
-        logger.debug(s"got receipt from ${envelope.getSourceAddress} ${envelope.getSourceDevice}")
+        logger.debug(s"received receipt from ${envelope.getSource}")
+        // not handled yet, just an example
+        eventPublisher.publishEvent(ReceiptEvent(envelope.getSourceAddress, envelope.getSourceDevice, envelope.getTimestamp))
         // TODO: handle
       } else if (envelope.isSignalMessage) {
         logger.debug(s"got signalmessage from ${envelope.getSourceAddress} ${envelope.getSourceDevice}")
@@ -71,14 +71,8 @@ case class MessageReceiver(cipher: SignalServiceCipher,
 
       // do this after decryption
       if (envelope.isPreKeySignalMessage) {
-        logger.debug(s"got prekeys from ${envelope.getSourceAddress} ${envelope.getSourceDevice}")
-
-        // TODO: handle
-        // refresh prekeys
-        // if less than 10 prekeys available - refresh:
-        // create new prekeys, new signed prekey and publish using accountmanager.setPreKeys
-        // and set active signedprekey id
-        // clean prekeys - delete signedprekeys that are older than 7 days and not active anymore
+        logger.debug("received prekey signal message")
+        eventPublisher.publishEvent(PreKeyEvent(envelope, content))
       }
 
     } catch {
@@ -109,13 +103,13 @@ object MessageReceiver {
     )
     val messageHandler = new SignalDesktopMessageHandler(
       context.applicationStore,
-      context.account.accountManager,
       signalMessageReceiver)
     val signalServiceCipher = new SignalServiceCipher(new SignalServiceAddress(data.userName), context.protocolStore)
     MessageReceiver(
       signalServiceCipher,
       signalMessageReceiver,
       messageHandler,
+      context.asInstanceOf[EventPublisher],
       10 * 1000L
     )
   }

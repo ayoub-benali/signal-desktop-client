@@ -4,7 +4,7 @@ import java.util
 
 import de.m7w3.signal.Logging
 import de.m7w3.signal.store.SignalDesktopApplicationStore
-import org.whispersystems.signalservice.api.{SignalServiceAccountManager, SignalServiceMessageReceiver}
+import org.whispersystems.signalservice.api.SignalServiceMessageReceiver
 import org.whispersystems.signalservice.api.messages.multidevice._
 import org.whispersystems.signalservice.api.messages.{SignalServiceAttachment, SignalServiceDataMessage, SignalServiceEnvelope}
 
@@ -13,7 +13,6 @@ import scala.collection.JavaConverters.collectionAsScalaIterableConverter
 
 
 class SignalDesktopMessageHandler(signalDesktopApplicationStore: SignalDesktopApplicationStore,
-                                  accountManager: SignalServiceAccountManager,
                                   messageReceiver: SignalServiceMessageReceiver) extends MessageHandler with Logging {
 
   //def handlePrekeyMessage()

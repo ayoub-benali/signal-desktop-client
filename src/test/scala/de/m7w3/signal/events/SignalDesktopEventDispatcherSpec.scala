@@ -1,33 +1,35 @@
 package de.m7w3.signal.events
 
+import monix.execution.CancelableFuture
 import monix.execution.Scheduler.Implicits.global
 import monix.execution.atomic.Atomic
 import monix.reactive.Observable
+import org.scalatest.concurrent.{Eventually, IntegrationPatience}
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.concurrent.Await
-import scala.concurrent.duration._
 
-
-class SignalDesktopEventDispatcherSpec extends FlatSpec with Matchers {
+class SignalDesktopEventDispatcherSpec extends FlatSpec
+  with Matchers
+  with Eventually
+  with IntegrationPatience {
 
   behavior of classOf[SignalDesktopEventDispatcher].getSimpleName
 
+
   it should "deliver events to registered listener" in {
-    val dispatcher = new SignalDesktopEventDispatcher()
+    val dispatcher = new SignalDesktopEventDispatcher
     val listener = CountingEventListener()
     val registration = dispatcher.register(listener)
     val event = TestEvent("foo")
-    val events = Observable.repeat(event).take(10)
-    val cancelable = events.foreach(
-      dispatcher.publishEvent(_)
-    )
-    Await.ready(cancelable, 10 seconds)
-    listener.count shouldBe 10L
+
+    publish(Observable.repeat(event).take(10), dispatcher)
+    eventually {
+      listener.count shouldBe 10L
+    }
   }
 
   it should "only dispatch requested events" in {
-    val dispatcher = new SignalDesktopEventDispatcher()
+    val dispatcher = new SignalDesktopEventDispatcher
     val fooListener = CountingEventListener(Some("foo"))
     val barListener = CountingEventListener(Some("bar"))
     val fooRegistration = dispatcher.register(fooListener)
@@ -42,12 +44,18 @@ class SignalDesktopEventDispatcherSpec extends FlatSpec with Matchers {
       Observable.repeat(barEvent).take(12),
       Observable.repeat(bazEvent).take(13)
     )
-    val cancelable = events.foreach((event) => {
+    publish(events, dispatcher)
+    eventually {
+      fooListener.count shouldBe 11L
+      barListener.count shouldBe 12L
+    }
+  }
+
+  def publish(events: Observable[SignalDesktopEvent],
+              dispatcher: SignalDesktopEventDispatcher): CancelableFuture[Unit] = {
+    events.foreach((event) => {
       dispatcher.publishEvent(event)
     })
-    Await.ready(cancelable, 10 seconds)
-    fooListener.count shouldBe 11L
-    barListener.count shouldBe 12L
   }
 
   case class TestEvent(eventType: String) extends SignalDesktopEvent

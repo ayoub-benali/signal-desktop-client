@@ -1,6 +1,7 @@
 package de.m7w3.signal
 
-import de.m7w3.signal.events.{EventDispatcher, EventPublisher, SignalDesktopEventDispatcher}
+import de.m7w3.signal.account.AccountHelper
+import de.m7w3.signal.events.SignalDesktopEventDispatcher
 import de.m7w3.signal.store.model.Schema
 import de.m7w3.signal.store.{DBActionRunner, DatabaseLoader, SignalDesktopApplicationStore, SignalDesktopProtocolStore}
 import monix.reactive.Observable

@@ -3,6 +3,7 @@ package de.m7w3.signal
 import java.io.File
 import java.util.concurrent.atomic.AtomicReference
 
+import account.AccountHelper
 import de.m7w3.signal.Config.SignalDesktopConfig
 import de.m7w3.signal.exceptions.DatabaseDoesNotExistException
 import de.m7w3.signal.resources.StoreResource

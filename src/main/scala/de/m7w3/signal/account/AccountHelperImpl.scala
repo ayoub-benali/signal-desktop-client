@@ -1,9 +1,10 @@
-package de.m7w3.signal
+package de.m7w3.signal.account
 
 import java.io.IOException
 import java.net.URLEncoder
 import java.security.InvalidKeyException
 
+import de.m7w3.signal._
 import de.m7w3.signal.store.SignalDesktopProtocolStore
 import de.m7w3.signal.store.model.Identity
 import org.whispersystems.libsignal.IdentityKeyPair
@@ -13,26 +14,27 @@ import org.whispersystems.libsignal.util.guava.Optional
 import org.whispersystems.libsignal.util.{KeyHelper, Medium}
 import org.whispersystems.signalservice.api.crypto.UntrustedIdentityException
 import org.whispersystems.signalservice.api.messages.multidevice.{RequestMessage, SignalServiceSyncMessage}
-import org.whispersystems.signalservice.api.{SignalServiceAccountManager, SignalServiceMessagePipe, SignalServiceMessageSender}
-import org.whispersystems.signalservice.internal.push.{SignalServiceProtos, SignalServiceUrl}
+import org.whispersystems.signalservice.api.{SignalServiceAccountManager, SignalServiceMessageSender}
+import org.whispersystems.signalservice.internal.push.SignalServiceProtos
 import org.whispersystems.signalservice.internal.util.Base64
 
 import scala.util.{Success, Try}
 
-case class AccountHelper(userId: String, password: String) extends Logging {
+/**
+  * Created by mat on 16.02.17.
+  */
+case class AccountHelperImpl(userId: String, password: String) extends AccountHelper with Logging {
 
-  val PREKEY_BATCH_SIZE = 100
-  // some init to create a SignalServiceAccountManager
   val accountManager = new SignalServiceAccountManager(Constants.SERVICE_URLS, userId, password, Constants.USER_AGENT)
 
-  def getNewDeviceURL: String = {
+  override def generateNewDeviceURL(): String = {
     val uuid = URLEncoder.encode(accountManager.getNewDeviceUuid, "UTF-8")
     val publicKey = URLEncoder.encode(Base64.encodeBytesWithoutPadding(TemporaryIdentity.get.getPublicKey.serialize()), "UTF-8")
     val url = s"tsdevice:/?uuid=$uuid&pub_key=$publicKey"
     url
   }
 
-  def finishDeviceLink(deviceName: String, store: SignalDesktopProtocolStore): Unit = {
+  override def finishDeviceLink(deviceName: String, store: SignalDesktopProtocolStore): Unit = {
       val signalingKey = Util.getSecret(52)
       val temporaryRegistrationId = KeyHelper.generateRegistrationId(false)
       val ret = accountManager.finishNewDeviceRegistration(TemporaryIdentity.get, signalingKey, false, true, temporaryRegistrationId, deviceName)
@@ -45,10 +47,9 @@ case class AccountHelper(userId: String, password: String) extends Logging {
       refreshPreKeys(store)
       requestSyncGroups(deviceId, store)
       requestSyncContacts(deviceId, store)
-
   }
 
-  def refreshPreKeys(store: SignalDesktopProtocolStore): Unit = {
+  override def refreshPreKeys(store: SignalDesktopProtocolStore): PreKeyRefreshResult = {
     import scala.collection.JavaConverters.seqAsJavaListConverter
 
     val oneTimePreKeys = generatePreKeys(store)
@@ -56,6 +57,11 @@ case class AccountHelper(userId: String, password: String) extends Logging {
     val signedPreKeyRecord = generateSignedPreKey(store.getIdentityKeyPair(), store)
 
     accountManager.setPreKeys(store.getIdentityKeyPair().getPublicKey, lastResortKey, signedPreKeyRecord, oneTimePreKeys.asJava)
+    PreKeyRefreshResult(oneTimePreKeys, lastResortKey, signedPreKeyRecord)
+  }
+
+  override def countAvailablePreKeys(): Int = {
+    accountManager.getPreKeysCount
   }
 
   @throws[IOException]
@@ -111,7 +117,7 @@ case class AccountHelper(userId: String, password: String) extends Logging {
   }
 
   def generatePreKeys(store: SignalDesktopProtocolStore): List[PreKeyRecord] = {
-    val records = (0 until PREKEY_BATCH_SIZE).map(i => {
+    val records = (0 until AccountHelper.PREKEY_BATCH_SIZE).map(i => {
       val preKeyId = store.preKeyStore.incrementAndGetPreKeyId()
       val keyPair = Curve.generateKeyPair()
       val record = new PreKeyRecord(preKeyId, keyPair)

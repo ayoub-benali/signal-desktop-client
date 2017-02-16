@@ -100,7 +100,7 @@ object MessageReceiver {
   def initialize(context: InitiatedContext): MessageReceiver = {
     val data: Registration = context.protocolStore.getRegistrationData()
     val signalMessageReceiver: SignalServiceMessageReceiver = new SignalServiceMessageReceiver(
-      Array(new SignalServiceUrl(Constants.URL, LocalKeyStore)),
+      Constants.SERVICE_URLS,
       data.userName,
       data.password,
       data.deviceId,

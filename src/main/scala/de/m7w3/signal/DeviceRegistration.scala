@@ -3,6 +3,7 @@ package de.m7w3.signal
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 import java.net.InetAddress
 
+import account.AccountHelper
 import de.m7w3.signal.controller.MainView
 import de.m7w3.signal.messages.MessageReceiver
 
@@ -69,7 +70,7 @@ object DeviceRegistration{
           val password = Util.getSecret(20)
           val account = AccountHelper(userId.getText(), password)
           //TODO: show a progress bar while the future is not complete
-          val generateUrl: () => String = () => account.getNewDeviceURL
+          val generateUrl: () => String = () => account.generateNewDeviceURL()
           val outputStream = QRCodeGenerator.generate(generateUrl)
           logger.debug("QR code created from new deviceURL")
           Platform.runLater {

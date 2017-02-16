@@ -4,20 +4,21 @@ import de.m7w3.signal.account.AccountHelper
 import de.m7w3.signal.events.SignalDesktopEventDispatcher
 import de.m7w3.signal.store.model.Schema
 import de.m7w3.signal.store.{DBActionRunner, DatabaseLoader, SignalDesktopApplicationStore, SignalDesktopProtocolStore}
-import monix.reactive.Observable
+import monix.execution.atomic.Atomic
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.core.config.Configurator
-import org.slf4j.LoggerFactory
 import slick.driver.H2Driver.api._
 
 import scala.util.Try
 
-trait ApplicationContext
+trait ApplicationContext {
+  def close(): Unit
+}
 
 
-case class ContextBuilder(config: Config.SignalDesktopConfig) {
+case class ContextBuilder(config: Config.SignalDesktopConfig,
+                          appContextRef: Atomic[Option[ApplicationContext]]) extends Logging {
 
-  private val logger = LoggerFactory.getLogger(getClass)
   val databaseLoader = DatabaseLoader(config.profileDir.getAbsolutePath)
 
   if (config.verbose) {
@@ -40,12 +41,14 @@ case class ContextBuilder(config: Config.SignalDesktopConfig) {
         val applicationStore = SignalDesktopApplicationStore(dbRunner)
         val regData = protocolStore.getRegistrationData()
         val accountHelper = AccountHelper(regData.userName, regData.password)
-        InitiatedContext(
+        val ctx = InitiatedContext(
           accountHelper,
           dbRunner,
           protocolStore,
           applicationStore
         )
+        appContextRef.set(Some(ctx))
+        ctx
       })
   }
 
@@ -62,11 +65,13 @@ case class ContextBuilder(config: Config.SignalDesktopConfig) {
       }).map(dbRunner => {
         val store = SignalDesktopProtocolStore(dbRunner)
         val applicationStore = SignalDesktopApplicationStore(dbRunner)
-        InitiatedContext(
+        val ctx = InitiatedContext(
           accountHelper,
           dbRunner,
           store,
           applicationStore)
+        appContextRef.set(Some(ctx))
+        ctx
     })
   }
 }
@@ -74,7 +79,12 @@ case class ContextBuilder(config: Config.SignalDesktopConfig) {
 case class InitiatedContext(account: AccountHelper,
                             dBActionRunner: DBActionRunner,
                             protocolStore: SignalDesktopProtocolStore,
-                            applicationStore: SignalDesktopApplicationStore) extends SignalDesktopEventDispatcher with ApplicationContext
+                            applicationStore: SignalDesktopApplicationStore) extends SignalDesktopEventDispatcher with ApplicationContext {
+  override def close(): Unit = {
+    super.close()
+    dBActionRunner.close()
+  }
+}
 
 
 

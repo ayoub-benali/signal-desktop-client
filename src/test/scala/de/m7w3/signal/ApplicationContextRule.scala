@@ -8,6 +8,7 @@ import de.m7w3.signal.Config.SignalDesktopConfig
 import de.m7w3.signal.exceptions.DatabaseDoesNotExistException
 import de.m7w3.signal.resources.StoreResource
 import de.m7w3.signal.store.Addresses
+import monix.execution.atomic.Atomic
 import org.junit.rules.ExternalResource
 
 import scala.concurrent.duration._
@@ -29,8 +30,9 @@ class ApplicationContextRule extends ExternalResource with StoreResource with Ad
       protocolStore,
       applicationStore
     )
+    val contextRef = Atomic(Some(context).asInstanceOf[Option[ApplicationContext]])
     builder.set(
-      new ContextBuilder(SignalDesktopConfig(verbose=false, 1.seconds, new File("foo"))) {
+      new ContextBuilder(SignalDesktopConfig(verbose=false, 1.seconds, new File("foo")), contextRef) {
         override def profileDirExists: Boolean = true
         override def profileIsInitialized: Boolean = true
         override def buildWithExistingStore(password: String): Try[InitiatedContext] = {
@@ -39,7 +41,6 @@ class ApplicationContextRule extends ExternalResource with StoreResource with Ad
           } else {
             Success(context)
           }
-
         }
         override def buildWithNewStore(accountHelper: AccountHelper,
                                        password: String): Try[InitiatedContext] = Success(context)

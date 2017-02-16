@@ -35,5 +35,5 @@ class SignalDesktopEventDispatcher extends EventPublisher with EventDispatcher {
 
   override def register(listener: EventListener): Cancelable = subject.subscribe(listener)
 
-  def finish(): Unit = subject.onComplete()
+  def close(): Unit = subject.onComplete()
 }

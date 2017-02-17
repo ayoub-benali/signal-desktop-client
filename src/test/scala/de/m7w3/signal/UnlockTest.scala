@@ -6,6 +6,7 @@ import javafx.stage.Stage
 
 import de.m7w3.signal.controller.UnlockDB
 import de.m7w3.signal.exceptions.DatabaseDoesNotExistException
+import monix.execution.atomic.Atomic
 import org.junit.Test
 import org.mockito.{ArgumentMatchers, Mockito}
 import org.scalatest.junit.{AssertionsForJUnit, JUnitSuiteLike}
@@ -31,7 +32,8 @@ class UnlockTest extends ApplicationTest with JUnitSuiteLike with AssertionsForJ
   ))
 
   override def start(stage: Stage): Unit = {
-    val root = UnlockDB(contextBuilder)
+    val ctxRef = Atomic(Some(initiatedContext).asInstanceOf[Option[ApplicationContext]])
+    val root = UnlockDB(contextBuilder, ctxRef)
     val scene = new Scene(root)
     val sStage = new SStage(stage)
     sStage.setScene(scene)

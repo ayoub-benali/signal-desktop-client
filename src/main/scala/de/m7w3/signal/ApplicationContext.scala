@@ -4,7 +4,6 @@ import de.m7w3.signal.account.AccountHelper
 import de.m7w3.signal.events.SignalDesktopEventDispatcher
 import de.m7w3.signal.store.model.Schema
 import de.m7w3.signal.store.{DBActionRunner, DatabaseLoader, SignalDesktopApplicationStore, SignalDesktopProtocolStore}
-import monix.execution.atomic.Atomic
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.core.config.Configurator
 import slick.driver.H2Driver.api._
@@ -16,8 +15,7 @@ trait ApplicationContext {
 }
 
 
-case class ContextBuilder(config: Config.SignalDesktopConfig,
-                          appContextRef: Atomic[Option[ApplicationContext]]) extends Logging {
+case class ContextBuilder(config: Config.SignalDesktopConfig) extends Logging {
 
   val databaseLoader = DatabaseLoader(config.profileDir.getAbsolutePath)
 
@@ -41,14 +39,12 @@ case class ContextBuilder(config: Config.SignalDesktopConfig,
         val applicationStore = SignalDesktopApplicationStore(dbRunner)
         val regData = protocolStore.getRegistrationData()
         val accountHelper = AccountHelper(regData.userName, regData.password)
-        val ctx = InitiatedContext(
+        InitiatedContext(
           accountHelper,
           dbRunner,
           protocolStore,
           applicationStore
         )
-        appContextRef.set(Some(ctx))
-        ctx
       })
   }
 
@@ -65,13 +61,11 @@ case class ContextBuilder(config: Config.SignalDesktopConfig,
       }).map(dbRunner => {
         val store = SignalDesktopProtocolStore(dbRunner)
         val applicationStore = SignalDesktopApplicationStore(dbRunner)
-        val ctx = InitiatedContext(
+        InitiatedContext(
           accountHelper,
           dbRunner,
           store,
           applicationStore)
-        appContextRef.set(Some(ctx))
-        ctx
     })
   }
 }

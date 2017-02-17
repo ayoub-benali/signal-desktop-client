@@ -32,7 +32,7 @@ class ApplicationContextRule extends ExternalResource with StoreResource with Ad
     )
     val contextRef = Atomic(Some(context).asInstanceOf[Option[ApplicationContext]])
     builder.set(
-      new ContextBuilder(SignalDesktopConfig(verbose=false, 1.seconds, new File("foo")), contextRef) {
+      new ContextBuilder(SignalDesktopConfig(verbose=false, 1.seconds, new File("foo"))) {
         override def profileDirExists: Boolean = true
         override def profileIsInitialized: Boolean = true
         override def buildWithExistingStore(password: String): Try[InitiatedContext] = {

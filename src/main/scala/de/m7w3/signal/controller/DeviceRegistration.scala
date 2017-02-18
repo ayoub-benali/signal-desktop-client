@@ -1,10 +1,10 @@
-package de.m7w3.signal
+package de.m7w3.signal.controller
 
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 import java.net.InetAddress
 
-import de.m7w3.signal.controller.MainView
-import de.m7w3.signal.messages.MessageReceiver
+import de.m7w3.signal._
+import de.m7w3.signal.account.AccountHelper
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -20,7 +20,7 @@ import scalafx.scene.layout._
 
 object DeviceRegistration{
 
-  def load(context: ContextBuilder): Parent = {
+  def load(contextBuilder: ContextBuilder): Parent = {
 
     case class Step1() extends VBox with Logging {
       alignment = Pos.Center
@@ -69,7 +69,7 @@ object DeviceRegistration{
           val password = Util.getSecret(20)
           val account = AccountHelper(userId.getText(), password)
           //TODO: show a progress bar while the future is not complete
-          val generateUrl: () => String = () => account.getNewDeviceURL
+          val generateUrl: () => String = () => account.generateNewDeviceURL()
           val outputStream = QRCodeGenerator.generate(generateUrl)
           logger.debug("QR code created from new deviceURL")
           Platform.runLater {
@@ -106,10 +106,13 @@ object DeviceRegistration{
       val finish = new Button("Finish")
       finish.onAction = (a: ActionEvent) => Future {
         // TODO show a progress bar
-        context.buildWithNewStore(account, password) match {
+        contextBuilder.buildWithNewStore(account, password) match {
           case Success(c) =>
+
             account.finishDeviceLink(deviceName, c.protocolStore)
-            MessageReceiver.initialize(c.protocolStore, c.applicationStore)
+            // app initialization
+            ApplicationContext.initialize(c)
+
             Platform.runLater {
               val root = MainView.load(c)
               this.getScene.setRoot(root)

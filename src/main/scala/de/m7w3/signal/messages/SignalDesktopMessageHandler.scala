@@ -15,6 +15,8 @@ import scala.collection.JavaConverters.collectionAsScalaIterableConverter
 class SignalDesktopMessageHandler(signalDesktopApplicationStore: SignalDesktopApplicationStore,
                                   messageReceiver: SignalServiceMessageReceiver) extends MessageHandler with Logging {
 
+  //def handlePrekeyMessage()
+
   def handleBlockedList(envelope: SignalServiceEnvelope, message: BlockedListMessage) = {
     logger.debug(s"got blockedlist message [{}]", message.getNumbers.asScala.mkString(", "))
   }
@@ -58,7 +60,8 @@ class SignalDesktopMessageHandler(signalDesktopApplicationStore: SignalDesktopAp
     processGroups(groupsStream)
   }
 
-  def processGroups(groupsStream: DeviceGroupsInputStream): Unit = {
+  @tailrec
+  private def processGroups(groupsStream: DeviceGroupsInputStream): Unit = {
     Option(groupsStream.read()) match {
       case Some(deviceGroup: DeviceGroup) =>
         logger.debug("received group {}", deviceGroup.getName)

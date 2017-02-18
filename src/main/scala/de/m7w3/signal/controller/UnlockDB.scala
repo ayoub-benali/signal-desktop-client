@@ -1,8 +1,6 @@
 package de.m7w3.signal.controller
 
-import de.m7w3.signal.ContextBuilder
-import de.m7w3.signal.messages.MessageReceiver
-import org.slf4j.LoggerFactory
+import de.m7w3.signal.{ApplicationContext, ContextBuilder, Logging}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -15,9 +13,7 @@ import scalafx.scene.control.{Button, Label, PasswordField}
 import scalafx.scene.image.ImageView
 import scalafx.scene.layout.GridPane
 
-case class UnlockDB(context: ContextBuilder) extends GridPane {
-
-  private val logger = LoggerFactory.getLogger(getClass)
+case class UnlockDB(contextBuilder: ContextBuilder) extends GridPane with Logging {
 
   hgap = 10
   vgap = 20
@@ -47,9 +43,9 @@ case class UnlockDB(context: ContextBuilder) extends GridPane {
     button.disable = true
     img.visible = false
     Future {
-      context.buildWithExistingStore(password.getText()) match {
+      contextBuilder.buildWithExistingStore(password.getText()) match {
         case Success(c) =>
-          MessageReceiver.initialize(c.protocolStore, c.applicationStore)
+          ApplicationContext.initialize(c)
           Platform.runLater {
             val root = MainView.load(c)
             this.getScene.setRoot(root)

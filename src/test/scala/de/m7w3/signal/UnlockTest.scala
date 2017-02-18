@@ -24,7 +24,7 @@ class UnlockTest extends ApplicationTest with JUnitSuiteLike with AssertionsForJ
   val password = "abc"
   val wrong = "whatever"
   val contextBuilder = mock[ContextBuilder]
-  val initiatedContext = mock[InitiatedContext]
+  val initiatedContext = mock[ApplicationContext]
   Mockito.when(contextBuilder.buildWithExistingStore(ArgumentMatchers.eq(password))).thenReturn(Success(initiatedContext))
   Mockito.when(contextBuilder.buildWithExistingStore(ArgumentMatchers.eq(wrong))).thenReturn(Failure(
     new DatabaseDoesNotExistException("nope", null)

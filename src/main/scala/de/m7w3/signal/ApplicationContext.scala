@@ -1,20 +1,20 @@
 package de.m7w3.signal
 
+import de.m7w3.signal.account.AccountHelper
+import de.m7w3.signal.events.SignalDesktopEventDispatcher
+import de.m7w3.signal.messages.MessageReceiver
 import de.m7w3.signal.store.model.Schema
 import de.m7w3.signal.store.{DBActionRunner, DatabaseLoader, SignalDesktopApplicationStore, SignalDesktopProtocolStore}
+import monix.execution.atomic.Atomic
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.core.config.Configurator
-import org.slf4j.LoggerFactory
 import slick.driver.H2Driver.api._
 
 import scala.util.Try
 
-trait ApplicationContext
 
+case class ContextBuilder(config: Config.SignalDesktopConfig) extends Logging {
 
-case class ContextBuilder(config: Config.SignalDesktopConfig) extends ApplicationContext{
-
-  private val logger = LoggerFactory.getLogger(getClass)
   val databaseLoader = DatabaseLoader(config.profileDir.getAbsolutePath)
 
   if (config.verbose) {
@@ -29,7 +29,7 @@ case class ContextBuilder(config: Config.SignalDesktopConfig) extends Applicatio
 
   def profileDirExists: Boolean = config.profileDir.exists()
 
-  def buildWithExistingStore(password: String): Try[InitiatedContext] = {
+  def buildWithExistingStore(password: String): Try[ApplicationContext] = {
     databaseLoader.loadDatabase(password, onlyIfExists = true)
       .map(DBActionRunner(_, config.databaseTimeout, config.verbose))
       .map(dbRunner => {
@@ -37,11 +37,16 @@ case class ContextBuilder(config: Config.SignalDesktopConfig) extends Applicatio
         val applicationStore = SignalDesktopApplicationStore(dbRunner)
         val regData = protocolStore.getRegistrationData()
         val accountHelper = AccountHelper(regData.userName, regData.password)
-        InitiatedContext(accountHelper, dbRunner, protocolStore, applicationStore)
+        ApplicationContext(
+          accountHelper,
+          dbRunner,
+          protocolStore,
+          applicationStore
+        )
       })
   }
 
-  def buildWithNewStore(accountHelper: AccountHelper, password: String): Try[InitiatedContext] = {
+  def buildWithNewStore(accountHelper: AccountHelper, password: String): Try[ApplicationContext] = {
     databaseLoader.loadDatabase(password)
       .map(DBActionRunner(_, config.databaseTimeout, config.verbose))
       .map(dbRunner => {
@@ -54,15 +59,41 @@ case class ContextBuilder(config: Config.SignalDesktopConfig) extends Applicatio
       }).map(dbRunner => {
         val store = SignalDesktopProtocolStore(dbRunner)
         val applicationStore = SignalDesktopApplicationStore(dbRunner)
-        InitiatedContext(accountHelper, dbRunner, store, applicationStore)
+        ApplicationContext(
+          accountHelper,
+          dbRunner,
+          store,
+          applicationStore)
     })
   }
 }
 
-case class InitiatedContext(account: AccountHelper,
-                            dBActionRunner: DBActionRunner,
-                            protocolStore: SignalDesktopProtocolStore,
-                            applicationStore: SignalDesktopApplicationStore) extends ApplicationContext
+case class ApplicationContext(account: AccountHelper,
+                              dBActionRunner: DBActionRunner,
+                              protocolStore: SignalDesktopProtocolStore,
+                              applicationStore: SignalDesktopApplicationStore) extends SignalDesktopEventDispatcher {
+  override def close(): Unit = {
+    super.close()
+    dBActionRunner.close()
+  }
+}
+
+object ApplicationContext {
+
+  private val current = Atomic(None.asInstanceOf[Option[ApplicationContext]])
+
+  def getCurrent: Option[ApplicationContext] = current.get
+
+  /**
+    * initialize additional components that rely on the application context,
+    * thus can't be instantiated/initialized earlier.
+    */
+  def initialize(applicationContext: ApplicationContext): Unit = {
+    current.set(Some(applicationContext))
+    MessageReceiver.initialize(applicationContext)
+    Listeners.initialize(applicationContext)
+  }
+}
 
 
 

@@ -2,7 +2,7 @@ package de.m7w3.signal
 
 import java.security.Security
 
-import de.m7w3.signal.controller.UnlockDB
+import de.m7w3.signal.controller.{DeviceRegistration, UnlockDB}
 import org.whispersystems.libsignal.logging.SignalProtocolLoggerProvider
 
 import scalafx.application.JFXApp
@@ -19,14 +19,15 @@ object Main extends JFXApp {
   Security.insertProviderAt(new org.bouncycastle.jce.provider.BouncyCastleProvider(), 1)
   SignalProtocolLoggerProvider.setProvider(new ProtocolLogger())
 
+
   val signalDesktopConfig = Config.optionParser.parse(parameters.raw, Config.SignalDesktopConfig())
   signalDesktopConfig.foreach { config =>
-    val appContext = ContextBuilder(config)
-    val root = if (appContext.profileDirExists && appContext.profileIsInitialized) {
-      UnlockDB(appContext)
+    val ctxBuilder = ContextBuilder(config)
+    val root = if (ctxBuilder.profileDirExists && ctxBuilder.profileIsInitialized) {
+      UnlockDB(ctxBuilder)
     } else {
       // show welcome and registration screen
-      DeviceRegistration.load(appContext)
+      DeviceRegistration.load(ctxBuilder)
     }
     stage = new PrimaryStage {
       title = "Welcome"
@@ -35,8 +36,8 @@ object Main extends JFXApp {
   }
 
   override def stopApp(): Unit = {
-    // TODO: call shutdownExecutor on signal accountManager
     // cleanup shit
+    ApplicationContext.getCurrent.foreach(_.close())
     println("bye!")
     super.stopApp()
   }

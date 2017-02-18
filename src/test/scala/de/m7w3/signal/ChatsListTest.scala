@@ -17,14 +17,14 @@ import scalafxml.core.{DependenciesByType, FXMLView}
 
 class ChatsListTest extends ApplicationTest with JUnitSuiteLike with AssertionsForJUnit with MockitoSugar {
 
-  val appContext: ApplicationContext = mock[InitiatedContext]
+  val appContext: ApplicationContext = mock[ApplicationContext]
 
   override def start(stage: Stage): Unit = {
     val lxmlUri = getClass.getResource("/de/m7w3/signal/recent_chats_list.fxml")
     require(lxmlUri != null, "lxmlUri not found")
 
     val dependencies = Map[Type, Any](
-      typeOf[InitiatedContext] -> appContext
+      typeOf[ApplicationContext] -> appContext
     )
     val root = FXMLView(lxmlUri, new DependenciesByType(dependencies))
     val scene = new Scene(root)

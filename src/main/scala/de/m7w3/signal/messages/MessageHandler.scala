@@ -4,6 +4,7 @@ import org.whispersystems.signalservice.api.messages.multidevice.SignalServiceSy
 import org.whispersystems.signalservice.api.messages.{SignalServiceDataMessage, SignalServiceEnvelope}
 
 trait MessageHandler {
+
   def handleSyncMessage(envelope: SignalServiceEnvelope, syncMessage: SignalServiceSyncMessage)
   def handleDataMessage(envelope: SignalServiceEnvelope, dataMessage: SignalServiceDataMessage)
 }

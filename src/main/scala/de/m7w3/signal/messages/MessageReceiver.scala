@@ -3,15 +3,13 @@ package de.m7w3.signal.messages
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.{Executors, ThreadFactory, TimeUnit, TimeoutException}
 
-import de.m7w3.signal.store.{SignalDesktopApplicationStore, SignalDesktopProtocolStore}
-import de.m7w3.signal.{Constants, LocalKeyStore, Logging}
+import de.m7w3.signal.events.{EventPublisher, PreKeyEvent, ReceiptEvent}
 import de.m7w3.signal.store.model.Registration
+import de.m7w3.signal.{Constants, ApplicationContext, Logging}
 import org.whispersystems.libsignal.InvalidVersionException
 import org.whispersystems.signalservice.api.crypto.SignalServiceCipher
-import org.whispersystems.signalservice.api.messages.{SignalServiceContent, SignalServiceEnvelope}
 import org.whispersystems.signalservice.api.push.SignalServiceAddress
 import org.whispersystems.signalservice.api.{SignalServiceMessagePipe, SignalServiceMessageReceiver}
-import org.whispersystems.signalservice.internal.push.SignalServiceUrl
 
 import scala.annotation.tailrec
 import scala.concurrent.ExecutionContext
@@ -22,6 +20,7 @@ import scala.concurrent.ExecutionContext
 case class MessageReceiver(cipher: SignalServiceCipher,
                            messageReceiver: SignalServiceMessageReceiver,
                            messageHandler: MessageHandler,
+                           eventPublisher: EventPublisher,
                            timeoutMillis: Long) extends Logging {
 
   val threadFactory = new ThreadFactory {
@@ -51,17 +50,16 @@ case class MessageReceiver(cipher: SignalServiceCipher,
     try {
       val envelope = pipe.read(timeoutMillis, TimeUnit.MILLISECONDS)
 
-      if (envelope.isPreKeySignalMessage) {
-        logger.debug(s"got prekeys from ${envelope.getSourceAddress} ${envelope.getSourceDevice}")
-        // TODO: handle
-      } else if (envelope.isReceipt) {
-        logger.debug(s"got receipt from ${envelope.getSourceAddress} ${envelope.getSourceDevice}")
+      if (envelope.isReceipt) {
+        logger.debug(s"received receipt from ${envelope.getSource}")
+        // not handled yet, just an example
+        eventPublisher.publishEvent(ReceiptEvent.fromEnevelope(envelope))
         // TODO: handle
       } else if (envelope.isSignalMessage) {
         logger.debug(s"got signalmessage from ${envelope.getSourceAddress} ${envelope.getSourceDevice}")
         // TODO: handle
       }
-      val content = decryptMessage(envelope)
+      val content = cipher.decrypt(envelope)
 
       if (content.getDataMessage.isPresent) {
         messageHandler.handleDataMessage(envelope, content.getDataMessage.get())
@@ -70,6 +68,13 @@ case class MessageReceiver(cipher: SignalServiceCipher,
       } else {
         logger.debug("no content in received message")
       }
+
+      // do this after decryption
+      if (envelope.isPreKeySignalMessage) {
+        logger.debug("received prekey signal message")
+        eventPublisher.publishEvent(PreKeyEvent(envelope, content))
+      }
+
     } catch {
       case te: TimeoutException =>
         logger.debug(s"timeout waiting for messages...")
@@ -82,31 +87,29 @@ case class MessageReceiver(cipher: SignalServiceCipher,
       logger.info("stopped receiving messages.")
     }
   }
-
-  private def decryptMessage(envelope: SignalServiceEnvelope): SignalServiceContent = {
-    cipher.decrypt(envelope)
-  }
 }
 
 object MessageReceiver {
 
-  def initialize(protocolStore: SignalDesktopProtocolStore,
-                 applicationStore: SignalDesktopApplicationStore): MessageReceiver = {
-    val data: Registration = protocolStore.getRegistrationData()
+  def initialize(context: ApplicationContext): MessageReceiver = {
+    val data: Registration = context.protocolStore.getRegistrationData()
     val signalMessageReceiver: SignalServiceMessageReceiver = new SignalServiceMessageReceiver(
-      Array(new SignalServiceUrl(Constants.URL, LocalKeyStore)),
+      Constants.SERVICE_URLS,
       data.userName,
       data.password,
       data.deviceId,
       data.signalingKey,
       Constants.USER_AGENT
     )
-    val messageHandler = new SignalDesktopMessageHandler(applicationStore, signalMessageReceiver)
-    val signalServiceCipher = new SignalServiceCipher(new SignalServiceAddress(data.userName), protocolStore)
+    val messageHandler = new SignalDesktopMessageHandler(
+      context.applicationStore,
+      signalMessageReceiver)
+    val signalServiceCipher = new SignalServiceCipher(new SignalServiceAddress(data.userName), context.protocolStore)
     MessageReceiver(
       signalServiceCipher,
       signalMessageReceiver,
       messageHandler,
+      context.asInstanceOf[EventPublisher],
       10 * 1000L
     )
   }

@@ -71,8 +71,7 @@ case class SignalDesktopProtocolStore(dbRunner: DBActionRunner) extends SignalPr
   override def deleteSession(address: SignalProtocolAddress): Unit =
     sessionStore.deleteSession(address)
 
-  def save(userName: String, deviceId: Int, password: String, signalingKey: String): Unit = {
-    val registration = Registration(userName, deviceId, password, signalingKey)
+  def save(registration: Registration): Unit = {
     dbRunner.run(RegistrationData.insert(registration))
     ()
   }

@@ -1,8 +1,8 @@
 package de.m7w3.signal
 
-import de.m7w3.signal.account.AccountHelper
+import de.m7w3.signal.account.{AccountHelper, AccountInitializationHelper}
 import de.m7w3.signal.events.SignalDesktopEventDispatcher
-import de.m7w3.signal.messages.MessageReceiver
+import de.m7w3.signal.messages.{MessageReceiver, MessageSender, SignalMessageSender}
 import de.m7w3.signal.store.model.Schema
 import de.m7w3.signal.store.{DBActionRunner, DatabaseLoader, SignalDesktopApplicationStore, SignalDesktopProtocolStore}
 import monix.execution.atomic.Atomic
@@ -36,8 +36,10 @@ case class ContextBuilder(config: Config.SignalDesktopConfig) extends Logging {
         val protocolStore = SignalDesktopProtocolStore(dbRunner)
         val applicationStore = SignalDesktopApplicationStore(dbRunner)
         val regData = protocolStore.getRegistrationData()
-        val accountHelper = AccountHelper(regData.userName, regData.password)
+        val messageSender = SignalMessageSender(regData, protocolStore)
+        val accountHelper = AccountHelper(regData, messageSender)
         ApplicationContext(
+          messageSender,
           accountHelper,
           dbRunner,
           protocolStore,
@@ -46,7 +48,7 @@ case class ContextBuilder(config: Config.SignalDesktopConfig) extends Logging {
       })
   }
 
-  def buildWithNewStore(accountHelper: AccountHelper, password: String): Try[ApplicationContext] = {
+  def buildWithNewStore(accountInitHelper: AccountInitializationHelper, deviceName: String, password: String): Try[ApplicationContext] = {
     databaseLoader.loadDatabase(password)
       .map(DBActionRunner(_, config.databaseTimeout, config.verbose))
       .map(dbRunner => {
@@ -59,7 +61,11 @@ case class ContextBuilder(config: Config.SignalDesktopConfig) extends Logging {
       }).map(dbRunner => {
         val store = SignalDesktopProtocolStore(dbRunner)
         val applicationStore = SignalDesktopApplicationStore(dbRunner)
+        val registrationData = accountInitHelper.finishDeviceRegistration(deviceName, store)
+        val messageSender = SignalMessageSender(registrationData, store)
+        val accountHelper = AccountHelper(registrationData, messageSender)
         ApplicationContext(
+          messageSender,
           accountHelper,
           dbRunner,
           store,
@@ -68,7 +74,8 @@ case class ContextBuilder(config: Config.SignalDesktopConfig) extends Logging {
   }
 }
 
-case class ApplicationContext(account: AccountHelper,
+case class ApplicationContext(messageSender: MessageSender,
+                              account: AccountHelper,
                               dBActionRunner: DBActionRunner,
                               protocolStore: SignalDesktopProtocolStore,
                               applicationStore: SignalDesktopApplicationStore) extends SignalDesktopEventDispatcher {

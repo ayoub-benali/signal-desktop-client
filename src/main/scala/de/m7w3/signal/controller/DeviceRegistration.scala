@@ -4,7 +4,7 @@ import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 import java.net.InetAddress
 
 import de.m7w3.signal._
-import de.m7w3.signal.account.AccountHelper
+import de.m7w3.signal.account.AccountInitializationHelper
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -67,14 +67,14 @@ object DeviceRegistration{
       ok.onAction = (a: ActionEvent) => {
         Future {
           val password = Util.getSecret(20)
-          val account = AccountHelper(userId.getText(), password)
+          val accountInitHelper = AccountInitializationHelper(userId.getText(), password)
           //TODO: show a progress bar while the future is not complete
-          val generateUrl: () => String = () => account.generateNewDeviceURL()
+          val generateUrl: () => String = () => accountInitHelper.generateNewDeviceURL()
           val outputStream = QRCodeGenerator.generate(generateUrl)
           logger.debug("QR code created from new deviceURL")
           Platform.runLater {
             logger.debug("launching Step 3 UI...")
-            val step = Step3(account, dbPassword.getText(), deviceName.getText(), outputStream)
+            val step = Step3(accountInitHelper, dbPassword.getText(), deviceName.getText(), outputStream)
             this.getScene.setRoot(step)
           }
         }
@@ -94,7 +94,7 @@ object DeviceRegistration{
       add(ok, 0, 3)
     }
 
-    case class Step3(account: AccountHelper, password: String, deviceName: String, outputStream: ByteArrayOutputStream) extends GridPane{
+    case class Step3(accountInitHelper: AccountInitializationHelper, password: String, deviceName: String, outputStream: ByteArrayOutputStream) extends GridPane{
       val image = new Image(new ByteArrayInputStream(outputStream.toByteArray), 300D, 300D, true, true)
       val backgroundImage = new BackgroundImage(image, BackgroundRepeat.NoRepeat, BackgroundRepeat.NoRepeat, BackgroundPosition.Center, BackgroundSize.Default)
 
@@ -106,13 +106,10 @@ object DeviceRegistration{
       val finish = new Button("Finish")
       finish.onAction = (a: ActionEvent) => Future {
         // TODO show a progress bar
-        contextBuilder.buildWithNewStore(account, password) match {
+        contextBuilder.buildWithNewStore(accountInitHelper, deviceName, password) match {
           case Success(c) =>
-
-            account.finishDeviceLink(deviceName, c.protocolStore)
             // app initialization
             ApplicationContext.initialize(c)
-
             Platform.runLater {
               val root = MainView.load(c)
               this.getScene.setRoot(root)

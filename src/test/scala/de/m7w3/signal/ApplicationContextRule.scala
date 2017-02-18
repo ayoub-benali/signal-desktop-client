@@ -3,11 +3,12 @@ package de.m7w3.signal
 import java.io.File
 import java.util.concurrent.atomic.AtomicReference
 
-import account.AccountHelper
+import account.{AccountHelper, AccountInitializationHelper}
 import de.m7w3.signal.Config.SignalDesktopConfig
 import de.m7w3.signal.exceptions.DatabaseDoesNotExistException
 import de.m7w3.signal.resources.StoreResource
 import de.m7w3.signal.store.Addresses
+import de.m7w3.signal.store.model.Registration
 import monix.execution.atomic.Atomic
 import org.junit.rules.ExternalResource
 
@@ -17,6 +18,7 @@ import scala.util.{Failure, Success, Try}
 class ApplicationContextRule extends ExternalResource with StoreResource with Addresses {
 
   val defaultPassword = "foo"
+  val signalingKey = Util.getSecret(52)
 
   private val builder = new AtomicReference[ContextBuilder]()
 
@@ -25,7 +27,8 @@ class ApplicationContextRule extends ExternalResource with StoreResource with Ad
     super.before()
     setupResource()
     val context = ApplicationContext(
-      AccountHelper(localAddress.getName, defaultPassword),
+      TestMessageSender,
+      AccountHelper(Registration(localAddress.getName, localAddress.getDeviceId, defaultPassword, signalingKey), TestMessageSender),
       dbActionRunner,
       protocolStore,
       applicationStore
@@ -42,7 +45,8 @@ class ApplicationContextRule extends ExternalResource with StoreResource with Ad
             Success(context)
           }
         }
-        override def buildWithNewStore(accountHelper: AccountHelper,
+        override def buildWithNewStore(accountInitHelper: AccountInitializationHelper,
+                                       deviceName: String,
                                        password: String): Try[ApplicationContext] = Success(context)
       })
   }

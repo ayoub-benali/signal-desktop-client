@@ -4,8 +4,13 @@
 # About
 Native desktop Signal client using Scala FX
 
-# Warning 
-This is a just an attemp to write an alternative desktop client to Signal, success is not guaranteed 
+# Current state 
+The application is currently able:
+- to be linked as a secondary device, by scanning a QR code
+- fetch messages, contacts and groups 
+
+There is an ongoing UI work in order to send messages.
+
 
 # Requirements
 * java 8

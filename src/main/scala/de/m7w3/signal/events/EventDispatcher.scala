@@ -1,6 +1,9 @@
 package de.m7w3.signal.events
 
+import de.m7w3.signal.Logging
+import monix.execution.Ack.Stop
 import monix.execution.Scheduler.Implicits.global
+import monix.execution.atomic.{Atomic, AtomicBoolean}
 import monix.execution.{Ack, Cancelable}
 import monix.reactive.OverflowStrategy.DropOld
 import monix.reactive.subjects.ConcurrentSubject
@@ -20,8 +23,9 @@ trait EventDispatcher {
   def register(listener: EventListener): Cancelable
 }
 
-class SignalDesktopEventDispatcher extends EventPublisher with EventDispatcher {
+class SignalDesktopEventDispatcher extends EventPublisher with EventDispatcher with Logging {
 
+  private val alive: AtomicBoolean = Atomic(true)
   private val bufferSize: Int = 1024
   private val overflowStrategy = DropOld(bufferSize)
   // ensures concurrency,safety
@@ -31,9 +35,21 @@ class SignalDesktopEventDispatcher extends EventPublisher with EventDispatcher {
   private val subject: ConcurrentSubject[SignalDesktopEvent, SignalDesktopEvent] =
     ConcurrentSubject.publish[SignalDesktopEvent](overflowStrategy)
 
-  override def publishEvent(event: SignalDesktopEvent): Future[Ack] = subject.onNext(event)
+  override def publishEvent(event: SignalDesktopEvent): Future[Ack] = {
+    if (alive.get) {
+       subject.onNext(event)
+    } else {
+      logger.warn(s"closed. ignoring event $event")
+      Stop
+    }
+  }
 
-  override def register(listener: EventListener): Cancelable = subject.subscribe(listener)
+  override def register(listener: EventListener): Cancelable = {
+    subject.subscribe(listener)
+  }
 
-  def close(): Unit = subject.onComplete()
+  def close(): Unit = {
+    alive.set(false)
+    subject.onComplete()
+  }
 }

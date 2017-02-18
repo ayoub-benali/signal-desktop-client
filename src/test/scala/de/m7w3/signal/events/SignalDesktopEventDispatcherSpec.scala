@@ -51,6 +51,29 @@ class SignalDesktopEventDispatcherSpec extends FlatSpec
     }
   }
 
+  it should "not deliver events after close" in {
+    val dispatcher = new SignalDesktopEventDispatcher
+    val listener = CountingEventListener()
+    val registration = dispatcher.register(listener)
+    val event = TestEvent("foo")
+
+    listener.count shouldBe 0L
+
+    publish(Observable.repeat(event).take(5), dispatcher)
+    eventually {
+      listener.count shouldBe 5L
+    }
+
+    dispatcher.close()
+
+    publish(Observable.repeat(event).take(5), dispatcher)
+
+    // this might not catch all cases, due to race conditions
+    // but if the dispatcher is correct this should never fail
+    Thread.sleep(10)
+    listener.count shouldBe 5L
+  }
+
   def publish(events: Observable[SignalDesktopEvent],
               dispatcher: SignalDesktopEventDispatcher): CancelableFuture[Unit] = {
     events.foreach((event) => {

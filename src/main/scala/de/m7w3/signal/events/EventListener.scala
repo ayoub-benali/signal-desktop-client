@@ -22,14 +22,14 @@ trait EventListener extends Observer[SignalDesktopEvent] {
   * very simplified observer that always returns "Continue"
   * and does not do any means to ensure backpressure
   */
-abstract class SimpleEventListener(val name: String = getClass.getSimpleName) extends EventListener with Logging {
+abstract class SimpleEventListener extends EventListener with Logging {
 
   override def onError(ex: Throwable): Unit = {
-    logger.error(s"Error in event listener $name", ex)
+    logger.error(s"Error in event listener ${getClass.getSimpleName}", ex)
   }
 
   override def onComplete(): Unit = {
-    logger.info(s"$name completed")
+    logger.info(s"${getClass.getSimpleName} completed")
   }
 }
 

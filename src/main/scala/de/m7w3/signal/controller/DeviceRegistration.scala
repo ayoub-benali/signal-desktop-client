@@ -1,12 +1,10 @@
-package de.m7w3.signal
+package de.m7w3.signal.controller
 
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 import java.net.InetAddress
 
-import account.AccountHelper
-import de.m7w3.signal.controller.MainView
-import de.m7w3.signal.messages.MessageReceiver
-import monix.execution.atomic.Atomic
+import de.m7w3.signal._
+import de.m7w3.signal.account.AccountHelper
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -22,7 +20,7 @@ import scalafx.scene.layout._
 
 object DeviceRegistration{
 
-  def load(contextBuilder: ContextBuilder, appContextRef: Atomic[Option[ApplicationContext]]): Parent = {
+  def load(contextBuilder: ContextBuilder): Parent = {
 
     case class Step1() extends VBox with Logging {
       alignment = Pos.Center
@@ -110,9 +108,11 @@ object DeviceRegistration{
         // TODO show a progress bar
         contextBuilder.buildWithNewStore(account, password) match {
           case Success(c) =>
-            appContextRef.set(Some(c))
+
             account.finishDeviceLink(deviceName, c.protocolStore)
-            MessageReceiver.initialize(c)
+            // app initialization
+            ApplicationContext.initialize(c)
+
             Platform.runLater {
               val root = MainView.load(c)
               this.getScene.setRoot(root)

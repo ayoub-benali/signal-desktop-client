@@ -5,7 +5,7 @@ import java.util.concurrent.{Executors, ThreadFactory, TimeUnit, TimeoutExceptio
 
 import de.m7w3.signal.events.{EventPublisher, PreKeyEvent, ReceiptEvent}
 import de.m7w3.signal.store.model.Registration
-import de.m7w3.signal.{Constants, InitiatedContext, Logging}
+import de.m7w3.signal.{Constants, ApplicationContext, Logging}
 import org.whispersystems.libsignal.InvalidVersionException
 import org.whispersystems.signalservice.api.crypto.SignalServiceCipher
 import org.whispersystems.signalservice.api.push.SignalServiceAddress
@@ -53,7 +53,7 @@ case class MessageReceiver(cipher: SignalServiceCipher,
       if (envelope.isReceipt) {
         logger.debug(s"received receipt from ${envelope.getSource}")
         // not handled yet, just an example
-        eventPublisher.publishEvent(ReceiptEvent(envelope.getSourceAddress, envelope.getSourceDevice, envelope.getTimestamp))
+        eventPublisher.publishEvent(ReceiptEvent.fromEnevelope(envelope))
         // TODO: handle
       } else if (envelope.isSignalMessage) {
         logger.debug(s"got signalmessage from ${envelope.getSourceAddress} ${envelope.getSourceDevice}")
@@ -91,7 +91,7 @@ case class MessageReceiver(cipher: SignalServiceCipher,
 
 object MessageReceiver {
 
-  def initialize(context: InitiatedContext): MessageReceiver = {
+  def initialize(context: ApplicationContext): MessageReceiver = {
     val data: Registration = context.protocolStore.getRegistrationData()
     val signalMessageReceiver: SignalServiceMessageReceiver = new SignalServiceMessageReceiver(
       Constants.SERVICE_URLS,

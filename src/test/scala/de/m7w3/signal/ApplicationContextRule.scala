@@ -24,7 +24,7 @@ class ApplicationContextRule extends ExternalResource with StoreResource with Ad
   override def before(): Unit = {
     super.before()
     setupResource()
-    val context = InitiatedContext(
+    val context = ApplicationContext(
       AccountHelper(localAddress.getName, defaultPassword),
       dbActionRunner,
       protocolStore,
@@ -35,7 +35,7 @@ class ApplicationContextRule extends ExternalResource with StoreResource with Ad
       new ContextBuilder(SignalDesktopConfig(verbose=false, 1.seconds, new File("foo"))) {
         override def profileDirExists: Boolean = true
         override def profileIsInitialized: Boolean = true
-        override def buildWithExistingStore(password: String): Try[InitiatedContext] = {
+        override def buildWithExistingStore(password: String): Try[ApplicationContext] = {
           if (!password.equals(defaultPassword)) {
             Failure(new DatabaseDoesNotExistException("nope", null))
           } else {
@@ -43,7 +43,7 @@ class ApplicationContextRule extends ExternalResource with StoreResource with Ad
           }
         }
         override def buildWithNewStore(accountHelper: AccountHelper,
-                                       password: String): Try[InitiatedContext] = Success(context)
+                                       password: String): Try[ApplicationContext] = Success(context)
       })
   }
 

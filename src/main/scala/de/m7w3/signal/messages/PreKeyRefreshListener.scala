@@ -67,7 +67,6 @@ class PreKeyRefreshListener(accountHelper: AccountHelper,
         protocolStore.removeSignedPreKey(key.getId)
       })
     logger.debug("cleaned out old signed prekeys.")
-
   }
 }
 

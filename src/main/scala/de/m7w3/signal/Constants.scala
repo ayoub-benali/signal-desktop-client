@@ -6,6 +6,6 @@ object Constants {
   val URL = "https://textsecure-service.whispersystems.org"
   val USER_AGENT = "signal-desktop-client"
   val SERVICE_URLS = Array(
-    new SignalServiceUrl(URL, LocalKeyStore)
+    new SignalServiceUrl(URL, LocalTrustStore)
   )
 }

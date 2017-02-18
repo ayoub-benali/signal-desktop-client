@@ -1,8 +1,6 @@
 package de.m7w3.signal.controller
 
-import de.m7w3.signal.messages.MessageReceiver
 import de.m7w3.signal.{ApplicationContext, ContextBuilder, Logging}
-import monix.execution.atomic.Atomic
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -15,8 +13,7 @@ import scalafx.scene.control.{Button, Label, PasswordField}
 import scalafx.scene.image.ImageView
 import scalafx.scene.layout.GridPane
 
-case class UnlockDB(contextBuilder: ContextBuilder,
-                    appContextRef: Atomic[Option[ApplicationContext]]) extends GridPane with Logging {
+case class UnlockDB(contextBuilder: ContextBuilder) extends GridPane with Logging {
 
   hgap = 10
   vgap = 20
@@ -48,9 +45,7 @@ case class UnlockDB(contextBuilder: ContextBuilder,
     Future {
       contextBuilder.buildWithExistingStore(password.getText()) match {
         case Success(c) =>
-          // set reference in order to have it properly closed by the main app
-          appContextRef.set(Some(c))
-          MessageReceiver.initialize(c)
+          ApplicationContext.initialize(c)
           Platform.runLater {
             val root = MainView.load(c)
             this.getScene.setRoot(root)

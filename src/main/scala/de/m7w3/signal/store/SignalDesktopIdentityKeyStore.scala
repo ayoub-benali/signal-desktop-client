@@ -21,15 +21,13 @@ case class SignalDesktopIdentityKeyStore(dbRunner: DBActionRunner) extends Ident
     }
   }
 
-
   private def loadIdentity(): Identity = {
     identity match {
       case Some(id) => id
-      case _ => {
-        val loadedId = dbRunner.run(LocalIdentity.localIdentity)
-        identity = Some(loadedId)
-        loadedId
-      }
+      case None =>
+        val storedId = dbRunner.run(LocalIdentity.localIdentity)
+        identity = Some(storedId)
+        storedId
     }
   }
 

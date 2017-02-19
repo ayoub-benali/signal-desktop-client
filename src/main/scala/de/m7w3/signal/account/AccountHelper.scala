@@ -1,22 +1,20 @@
 package de.m7w3.signal.account
 
-import de.m7w3.signal.store.SignalDesktopProtocolStore
-import org.whispersystems.libsignal.state.{PreKeyRecord, SignedPreKeyRecord}
+import de.m7w3.signal.messages.MessageSender
+import de.m7w3.signal.store.model.Registration
 
-trait AccountHelper {
-  def generateNewDeviceURL(): String
-  def finishDeviceLink(deviceName: String, store: SignalDesktopProtocolStore): Unit
-  def refreshPreKeys(store: SignalDesktopProtocolStore): PreKeyRefreshResult
+trait AccountHelper extends PreKeyRefresher {
   def countAvailablePreKeys(): Int
+  def requestSyncGroups(): Unit
+  def requestSyncContacts(): Unit
 }
-
-case class PreKeyRefreshResult(oneTimePreKeys: List[PreKeyRecord], lastResortKey: PreKeyRecord, signedPreKeyRecord: SignedPreKeyRecord)
-
 
 object AccountHelper {
-  val PREKEY_BATCH_SIZE = 100
-
-  def apply(userId: String, password: String): AccountHelper = {
-    AccountHelperImpl(userId, password)
+  def apply(registration: Registration, messageSender: MessageSender): AccountHelper = {
+    AccountHelperImpl(registration.userName, registration.password, registration.deviceId, messageSender)
   }
 }
+
+
+
+

@@ -5,8 +5,8 @@ import java.util.concurrent.{Executors, ThreadFactory, TimeUnit, TimeoutExceptio
 
 import de.m7w3.signal.events.{EventPublisher, PreKeyEvent, ReceiptEvent}
 import de.m7w3.signal.store.model.Registration
-import de.m7w3.signal.{Constants, ApplicationContext, Logging}
-import org.whispersystems.libsignal.InvalidVersionException
+import de.m7w3.signal.{ApplicationContext, Constants, Logging}
+import org.whispersystems.libsignal._
 import org.whispersystems.signalservice.api.crypto.SignalServiceCipher
 import org.whispersystems.signalservice.api.push.SignalServiceAddress
 import org.whispersystems.signalservice.api.{SignalServiceMessagePipe, SignalServiceMessageReceiver}
@@ -51,35 +51,53 @@ case class MessageReceiver(cipher: SignalServiceCipher,
       val envelope = pipe.read(timeoutMillis, TimeUnit.MILLISECONDS)
 
       if (envelope.isReceipt) {
+        // TODO: handle
         logger.debug(s"received receipt from ${envelope.getSource}")
-        // not handled yet, just an example
+        // not handled yet, just an example, maybe we don't need an event here
         eventPublisher.publishEvent(ReceiptEvent.fromEnevelope(envelope))
-        // TODO: handle
-      } else if (envelope.isSignalMessage) {
-        logger.debug(s"got signalmessage from ${envelope.getSourceAddress} ${envelope.getSourceDevice}")
-        // TODO: handle
-      }
-      val content = cipher.decrypt(envelope)
-
-      if (content.getDataMessage.isPresent) {
-        messageHandler.handleDataMessage(envelope, content.getDataMessage.get())
-      } else if (content.getSyncMessage.isPresent) {
-        messageHandler.handleSyncMessage(envelope, content.getSyncMessage.get())
       } else {
-        logger.debug("no content in received message")
-      }
+        if (envelope.isSignalMessage) {
+          logger.debug(s"got signalmessage from ${envelope.getSourceAddress} ${envelope.getSourceDevice}")
+          // TODO: handle
+        }
+        val content = cipher.decrypt(envelope)
 
-      // do this after decryption
-      if (envelope.isPreKeySignalMessage) {
-        logger.debug("received prekey signal message")
-        eventPublisher.publishEvent(PreKeyEvent(envelope, content))
+        if (content.getDataMessage.isPresent) {
+          messageHandler.handleDataMessage(envelope, content.getDataMessage.get())
+        } else if (content.getSyncMessage.isPresent) {
+          messageHandler.handleSyncMessage(envelope, content.getSyncMessage.get())
+        } else {
+          logger.debug("no content in received message")
+        }
+
+        // do this after decryption
+        if (envelope.isPreKeySignalMessage) {
+          logger.debug("received prekey signal message")
+          eventPublisher.publishEvent(PreKeyEvent(envelope, content))
+        }
       }
 
     } catch {
       case te: TimeoutException =>
         logger.debug(s"timeout waiting for messages...")
-        // ignore
-      case e: InvalidVersionException => // ignore
+      case e: InvalidVersionException =>
+        logger.warn("invalid version", e)
+        // TODO: what would moxie do?
+      case e @ (_:InvalidMessageException | _:InvalidKeyIdException | _:InvalidKeyException) =>
+        logger.warn("corrupt message", e)
+        // TODO: what would moxie do?
+      case nse: NoSessionException =>
+        logger.warn("no session for this message", nse)
+      // TODO: what would moxie do?
+      case lme: LegacyMessageException =>
+        logger.warn("legacy message", lme)
+      // TODO: what would moxie do?
+      case dme: DuplicateMessageException =>
+        logger.warn("duplicate message", dme)
+      // TODO: what would moxie do?
+      case uie: UntrustedIdentityException =>
+        logger.warn("untrusted identity", uie)
+      // TODO: what would moxie do?
     }
     if (keepOnRockin.get()) {
       doReceiveMessages(pipe)

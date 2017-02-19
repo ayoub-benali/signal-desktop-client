@@ -78,6 +78,7 @@ class SignalDesktopEventDispatcherSpec extends FlatSpec
               dispatcher: SignalDesktopEventDispatcher): CancelableFuture[Unit] = {
     events.foreach((event) => {
       dispatcher.publishEvent(event)
+      ()
     })
   }
 

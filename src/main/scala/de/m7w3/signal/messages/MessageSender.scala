@@ -35,6 +35,9 @@ case class SignalMessageSender(userId: String, password: String, deviceId: Int, 
         //store.saveIdentity(e.getE164Number, e.getIdentityKey, TrustLevel.UNTRUSTED)
         throw e
       }
+      case e: Throwable =>
+        logger.error(s"error sending message $message", e)
+        throw e
     }
   }
 }

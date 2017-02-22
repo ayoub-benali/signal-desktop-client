@@ -13,7 +13,6 @@ object AttachmentHelpers {
       val stream = ssaStream.get()
       val bos = new ByteArrayOutputStream()
       val in = stream.getInputStream
-      in.reset()
       IOUtils.copy(in, bos)
       Some(bos.toByteArray)
     } else {

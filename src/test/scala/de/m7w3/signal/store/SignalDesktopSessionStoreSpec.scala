@@ -1,8 +1,10 @@
 package de.m7w3.signal.store
 
+import de.m7w3.signal.store.model.Sessions
 import org.scalatest.{FlatSpec, Matchers}
 import org.whispersystems.libsignal.SignalProtocolAddress
 import org.whispersystems.libsignal.state.{SessionRecord, SessionState}
+import slick.driver.H2Driver.api._
 
 class SignalDesktopSessionStoreSpec extends FlatSpec with Matchers with TestStore {
 
@@ -36,6 +38,30 @@ class SignalDesktopSessionStoreSpec extends FlatSpec with Matchers with TestStor
     // yields correct equality for this use case
     session.serialize() shouldEqual loadedSession.serialize()
     loadedSession == session shouldBe false
+  }
+
+  it should "mutate the same session record given the same address" in {
+    val session = new SessionRecord()
+    val state = new SessionState()
+    session.setState(state)
+    session.archiveCurrentState()
+
+    protocolStore.storeSession(remoteAddress, session)
+    val loadedSession = protocolStore.loadSession(remoteAddress)
+    session shouldBe 'isFresh
+    loadedSession shouldNot be('isFresh)
+
+    val newState = new SessionState()
+    newState.setLocalRegistrationId(1)
+    newState.setRemoteRegistrationId(42)
+    loadedSession.setState(newState)
+    protocolStore.storeSession(remoteAddress, loadedSession)
+
+    val numSessions = dbActionRunner.run(Sessions.sessions.length.result)
+    numSessions shouldBe 1
+
+    val loadedTwiceSession = protocolStore.loadSession(remoteAddress)
+    loadedTwiceSession.serialize() shouldEqual loadedSession.serialize()
   }
 
   it should "create a new session when loading non existent ones" in {

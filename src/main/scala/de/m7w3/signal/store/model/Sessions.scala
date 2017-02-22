@@ -12,34 +12,33 @@ import scala.concurrent.ExecutionContext
   * session without old states
   * TODO: convenient way to obtain old states
   */
-case class Session(id: Option[Int] = None, recordBytes: Array[Byte], addressId: Int) {
+case class Session(addressId: Int, recordBytes: Array[Byte]) {
   lazy val record = new SessionRecord(recordBytes)
 }
 
 class Sessions(tag: Tag) extends Table[Session](tag, "SESSIONS") {
-  def id = column[Int]("ID", O.PrimaryKey, O.AutoInc)
-  def addressId = column[Int]("ADDRESS_ID")
+  def id = column[Int]("ID", O.PrimaryKey)
   def record = column[Array[Byte]]("RECORD")
 
-  def address = foreignKey("SESSIONS_ADDRESS_FK", addressId, Addresses.addresses)(_.id)
+  def address = foreignKey("SESSIONS_ADDRESS_FK", id, Addresses.addresses)(_.id)
 
-  override def * = (id.?, record, addressId) <> (
+  override def * = (id, record) <> (
     Session.tupled,
     Session.unapply
   )
 }
 
 object Sessions {
-  val sessions = TableQuery[Sessions]
+  val sessions: TableQuery[Sessions] = TableQuery[Sessions]
 
   def get(address: SignalProtocolAddress) = {
     val addressId = address.hashCode()
-    sessions.filter(_.addressId === addressId).result.headOption
+    sessions.filter(_.id === addressId).result.headOption
   }
 
   def exists(address: SignalProtocolAddress) = {
     val addressId = address.hashCode()
-    sessions.filter(_.addressId === addressId).exists.result
+    sessions.filter(_.id === addressId).exists.result
   }
 
   def upsert(address: SignalProtocolAddress, record: SessionRecord) = {
@@ -48,7 +47,7 @@ object Sessions {
 
     val query = for {
       _ <- Addresses.upsert(address) // ensure address is stored
-      _ <- sessions.insertOrUpdate(Session(None, record.serialize(), addressId))
+      _ <- sessions.insertOrUpdate(Session(addressId, record.serialize()))
     } yield ()
 
     query.transactionally
@@ -56,19 +55,18 @@ object Sessions {
 
   def delete(address: SignalProtocolAddress) = {
     val addressId = address.hashCode()
-    sessions.filter(_.addressId === addressId).delete
+    sessions.filter(_.id === addressId).delete
   }
 
   def deleteByRemoteClientName(name: String) = {
-    // TODO: delete of joined query not working
-    sessions.filter(session => { session.addressId in (
+    sessions.filter(session => { session.id in (
         session.address filter { _.name === name } map { _.id }
       )
     }).delete
   }
 
   def getSessionDevices(remoteClientName: String) = {
-    val join = sessions join Addresses.addresses on (_.addressId === _.id)
+    val join = sessions join Addresses.addresses on (_.id === _.id)
     join.filter(_._2.name === remoteClientName).map(_._2.deviceId).result
   }
 }

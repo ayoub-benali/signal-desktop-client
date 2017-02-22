@@ -57,7 +57,7 @@ case class MessageReceiver(cipher: SignalServiceCipher,
         eventPublisher.publishEvent(ReceiptEvent.fromEnevelope(envelope))
       } else {
         if (envelope.isSignalMessage) {
-          logger.debug(s"got signalmessage from ${envelope.getSourceAddress} ${envelope.getSourceDevice}")
+          logger.debug(s"got signalmessage from ${envelope.getSourceAddress.getNumber} ${envelope.getSourceDevice}")
           // TODO: handle
         }
         val content = cipher.decrypt(envelope)

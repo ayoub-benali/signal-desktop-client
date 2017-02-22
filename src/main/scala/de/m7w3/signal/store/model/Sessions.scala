@@ -67,6 +67,9 @@ object Sessions {
 
   def getSessionDevices(remoteClientName: String) = {
     val join = sessions join Addresses.addresses on (_.id === _.id)
-    join.filter(_._2.name === remoteClientName).map(_._2.deviceId).result
+    join.filter(_._2.name === remoteClientName).map(_._2.deviceId)
+      .distinct
+      .sortBy(identity)
+      .result
   }
 }

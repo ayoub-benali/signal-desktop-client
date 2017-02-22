@@ -10,7 +10,6 @@ import scala.concurrent.Await
 import scala.concurrent.duration._
 
 class DatabaseLoaderSpec extends FlatSpec with Matchers {
-  behavior of DatabaseLoader.getClass.getSimpleName
 
   val pw = "123456"
 

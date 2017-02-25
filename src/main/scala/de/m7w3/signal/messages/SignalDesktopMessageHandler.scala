@@ -7,11 +7,10 @@ import de.m7w3.signal.events.{ContactsSyncedEvent, EventPublisher, GroupsSyncedE
 import de.m7w3.signal.store.SignalDesktopApplicationStore
 import org.whispersystems.signalservice.api.SignalServiceMessageReceiver
 import org.whispersystems.signalservice.api.messages.multidevice._
-import org.whispersystems.signalservice.api.messages.{SignalServiceAttachment, SignalServiceDataMessage, SignalServiceEnvelope}
-
+import org.whispersystems.signalservice.api.messages.{SignalServiceAttachment, SignalServiceDataMessage, SignalServiceEnvelope, SignalServiceGroup}
 import scala.annotation.tailrec
 import scala.collection.JavaConverters.collectionAsScalaIterableConverter
-
+import de.m7w3.signal.store.model.IncomingTextMessage
 
 class SignalDesktopMessageHandler(signalDesktopApplicationStore: SignalDesktopApplicationStore,
                                   messageReceiver: SignalServiceMessageReceiver,
@@ -109,7 +108,59 @@ class SignalDesktopMessageHandler(signalDesktopApplicationStore: SignalDesktopAp
     }
   }
 
-  override def handleDataMessage(envelope: SignalServiceEnvelope, dataMessage: SignalServiceDataMessage): Unit = {
-    logger.debug(s"received data message [${dataMessage.getBody} ${dataMessage.getGroupInfo}]")
+  override def handleDataMessage(envelope: SignalServiceEnvelope, message: SignalServiceDataMessage): Unit = {
+    logger.debug(s"received data message [${message.getBody} ${message.getGroupInfo}]")
+
+    if      (message.isEndSession())               handleEndSessionMessage(envelope, message)
+    else if (message.isGroupUpdate())              handleGroupMessage(envelope, message)
+    else if (message.isExpirationUpdate())         handleExpirationUpdate(envelope, message)
+    else if (message.getAttachments().isPresent()) handleMediaMessage(envelope, message)
+    else                                           handleTextMessage(envelope, message)
+
+
+    //TODO: check the groupDatabase
+    // if (message.getGroupInfo().isPresent() && groupDatabase.isUnknownGroup(message.getGroupInfo().get().getGroupId())) {
+    //   handleUnknownGroupMessage(envelope, message.getGroupInfo().get());
+    // }
+  }
+
+  def handleEndSessionMessage(envelope: SignalServiceEnvelope, message: SignalServiceDataMessage): Unit = {
+    logger.debug(s"received endSession message")
+  }
+
+  def handleGroupMessage(envelope: SignalServiceEnvelope, message: SignalServiceDataMessage): Unit = {
+    logger.debug(s"received groupUpdate message")
+  }
+
+  def handleExpirationUpdate(envelope: SignalServiceEnvelope, message: SignalServiceDataMessage): Unit = {
+    logger.debug(s"received expirationUpdate message")
+  }
+
+  def handleMediaMessage(envelope: SignalServiceEnvelope, message: SignalServiceDataMessage): Unit = {
+    logger.debug(s"received mediaMessage message")
+  }
+
+  def handleTextMessage(envelope: SignalServiceEnvelope, message: SignalServiceDataMessage): Unit = {
+    logger.debug(s"received textMessage message")
+    val body = if(message.getBody().isPresent()) message.getBody().get() else ""
+    val group = message.getGroupInfo()
+    val groupId = if (group.isPresent()) Some(group.get().getGroupId())
+    else None
+
+    val textMessage = IncomingTextMessage(body, envelope.getSource(), envelope.getSourceDevice(),
+      message.getTimestamp(), groupId)
+
+    // textMessage = new IncomingEncryptedMessage(textMessage, body);
+    // val  insertResult = database.insertMessageInbox(masterSecret, textMessage);
+
+    // if (insertResult.isPresent()) threadId = insertResult.get().getThreadId();
+    // else                          threadId = null;
+
+    // if (smsMessageId.isPresent()) database.deleteMessage(smsMessageId.get());
+
+  }
+
+  def handleUnknownGroupMessage(envelope: SignalServiceEnvelope, message: SignalServiceGroup): Unit = {
+    logger.debug(s"received unknownGroupMessage message")
   }
 }

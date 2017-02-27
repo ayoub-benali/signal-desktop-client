@@ -46,6 +46,7 @@ case class UnlockDB(contextBuilder: ContextBuilder) extends GridPane with Loggin
       contextBuilder.buildWithExistingStore(password.getText()) match {
         case Success(c) =>
           ApplicationContext.initialize(c)
+
           Platform.runLater {
             val root = MainView.load(c)
             this.getScene.setRoot(root)

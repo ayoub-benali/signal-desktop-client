@@ -5,6 +5,7 @@ import de.m7w3.signal.events.SignalDesktopEventDispatcher
 import de.m7w3.signal.messages.{MessageReceiver, MessageSender, SignalMessageSender}
 import de.m7w3.signal.store.model.Schema
 import de.m7w3.signal.store.{DBActionRunner, DatabaseLoader, SignalDesktopApplicationStore, SignalDesktopProtocolStore}
+import monix.execution.Scheduler
 import monix.execution.atomic.Atomic
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.core.config.Configurator
@@ -96,6 +97,9 @@ object ApplicationContext {
     * thus can't be instantiated/initialized earlier.
     */
   def initialize(applicationContext: ApplicationContext): Unit = {
+
+    implicit val scheduler = Scheduler.global
+
     current.set(Some(applicationContext))
     MessageReceiver.initialize(applicationContext)
     Listeners.initialize(applicationContext)

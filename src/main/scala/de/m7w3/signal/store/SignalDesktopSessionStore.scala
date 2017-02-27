@@ -10,11 +10,12 @@ import org.whispersystems.libsignal.state.{SessionRecord, SessionStore}
 case class SignalDesktopSessionStore(dbRunner: DBActionRunner) extends SessionStore with Logging {
 
   override def containsSession(address: SignalProtocolAddress): Boolean = {
-    dbRunner.run(Sessions.exists(address))
+    val sessionExists = dbRunner.run(Sessions.exists(address))
+    sessionExists && loadSession(address).getSessionState.hasSenderChain
   }
 
   override def loadSession(address: SignalProtocolAddress): SessionRecord = {
-    logger.debug(s"store session for $address.")
+    logger.debug(s"load session for $address.")
     dbRunner.run(Sessions.get(address)).map(_.record).getOrElse(
       new SessionRecord()
     )

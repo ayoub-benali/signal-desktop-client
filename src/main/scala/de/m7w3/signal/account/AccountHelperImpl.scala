@@ -5,7 +5,6 @@ import java.io.IOException
 import de.m7w3.signal._
 import de.m7w3.signal.messages.MessageSender
 import org.whispersystems.signalservice.api.SignalServiceAccountManager
-import org.whispersystems.signalservice.api.crypto.UntrustedIdentityException
 import org.whispersystems.signalservice.api.messages.multidevice.{RequestMessage, SignalServiceSyncMessage}
 import org.whispersystems.signalservice.internal.push.SignalServiceProtos
 
@@ -31,12 +30,15 @@ private[account] case class AccountHelperImpl(userId: String, password: String, 
   override def requestSyncGroups(): Unit = {
     val r = SignalServiceProtos.SyncMessage.Request.newBuilder.setType(SignalServiceProtos.SyncMessage.Request.Type.GROUPS).build
     val message = SignalServiceSyncMessage.forRequest(new RequestMessage(r))
-    try
+    logger.debug("requesting groups sync...")
+    try {
       messageSender.send(message)
-    catch {
-      case e: UntrustedIdentityException => {
+      logger.debug("groups sync requested.")
+    } catch {
+      case e: Throwable =>
         logger.error("Error requesting group synchronization", e)
-      }
+        throw e
+
     }
   }
 
@@ -44,12 +46,14 @@ private[account] case class AccountHelperImpl(userId: String, password: String, 
   override def requestSyncContacts(): Unit = {
     val r = SignalServiceProtos.SyncMessage.Request.newBuilder.setType(SignalServiceProtos.SyncMessage.Request.Type.CONTACTS).build
     val message = SignalServiceSyncMessage.forRequest(new RequestMessage(r))
-    try
+    logger.debug("requesting contacts sync...")
+    try {
       messageSender.send(message)
-    catch {
-      case e: UntrustedIdentityException => {
+      logger.debug("contacts sync requested.")
+    } catch {
+      case e: Throwable =>
         logger.error("Error requesting contact synchronization", e)
-      }
+        throw e
     }
   }
 }

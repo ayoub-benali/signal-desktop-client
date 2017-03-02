@@ -30,21 +30,21 @@ class ChatsListTest extends ApplicationTest
 
   val groups: Seq[GroupWithMembers] = Seq(
     GroupWithMembers(
-      Group(Some(1), Array[Byte](1, 2, 3), Some("group1"), None, true),
+      Group(1, Array[Byte](1, 2, 3), Some("group1"), None, true),
       Seq(
         GroupMember("member1", 1),
         GroupMember("member2", 2)
       )
     ),
     GroupWithMembers(
-      Group(Some(2), Array[Byte](1, 2, 3, 4), Some("group2"), None, false),
+      Group(2, Array[Byte](1, 2, 3, 4), Some("group2"), None, true),
       Seq(
         GroupMember("member2", 1),
         GroupMember("member3", 2)
       )
     ),
     GroupWithMembers(
-      Group(Some(3), Array[Byte](1, 2, 3, 4, 5), Some("group3"), None, false),
+      Group(3, Array[Byte](1, 2, 3, 4, 5), Some("group3"), None, false),
       Seq(
         GroupMember("member2", 1),
         GroupMember("member3", 2),
@@ -63,7 +63,7 @@ class ChatsListTest extends ApplicationTest
 
   override def start(stage: Stage): Unit = {
     Mockito.when(appStore.getGroups).thenReturn(groups.slice(0,2))
-
+    Mockito.when(appStore.getContacts).thenReturn(Seq.empty)
     val lxmlUri = getClass.getResource("/de/m7w3/signal/recent_chats_list.fxml")
     require(lxmlUri != null, "lxmlUri not found")
 

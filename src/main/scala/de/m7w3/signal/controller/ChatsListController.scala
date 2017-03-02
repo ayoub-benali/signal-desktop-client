@@ -1,11 +1,12 @@
 package de.m7w3.signal.controller
 
 import java.net.URL
-import java.time.LocalDateTime
 
-import de.m7w3.signal.{ApplicationContext, Logging}
 import de.m7w3.signal.events.{ContactsSyncedEvent, GroupsSyncedEvent, SignalDesktopEvent, SimpleEventListener}
+import de.m7w3.signal.{ApplicationContext, Logging}
+import monix.eval.Task
 import monix.execution.Cancelable
+import monix.execution.Scheduler.Implicits.global
 
 import scala.collection.JavaConverters.asJavaCollectionConverter
 import scala.reflect.runtime.universe.{Type, typeOf}
@@ -31,28 +32,26 @@ class ChatsListController(
     new ChatEntryListCell(applicationContext)
   }
 
-  reloadGroups() // load groups initially, then register for events
+  reloadChats() // load groups, contacts initially, then register for events
 
   val registration: Cancelable = applicationContext.register(this)
 
-  def reloadGroups(): Unit = {
-    val groups = applicationContext.applicationStore.getGroups
-    chatEntries.setAll(groups.map(
-      group => ChatEntry(
-        // TODO for groups without name use the id
-        group.group.name.getOrElse(group.members.map(_.name).mkString(",")),
-        LocalDateTime.now().minusHours(1L), // TODO: get ts of the latest message in that group
-        LastTextMessage("boom") // TODO: get latest group message
-      )
-    ).asJavaCollection)
+  def reloadChats(): Unit = {
+    Task {
+      val groups = applicationContext.applicationStore.getGroups
+      val groupEntries = groups.map(ChatEntry.fromGroup)
+
+      val contacts = applicationContext.applicationStore.getContacts
+      val contactEntries = contacts.map(ChatEntry.fromContact)
+
+      val sortedEntries = (groupEntries ++ contactEntries).sorted(ChatEntry.descByLastMessageOrdering)
+      chatEntries.setAll(sortedEntries.asJavaCollection)
+    }.runAsync
     ()
   }
 
   override val handle: PartialFunction[SignalDesktopEvent, Unit] = {
-    case GroupsSyncedEvent => reloadGroups()
-    case ContactsSyncedEvent =>
-      // TODO: reload and display contacts
-      //reloadGroups()
+    case GroupsSyncedEvent|ContactsSyncedEvent => reloadChats()
   }
 
   def onNewChat(event: ActionEvent): Unit = {

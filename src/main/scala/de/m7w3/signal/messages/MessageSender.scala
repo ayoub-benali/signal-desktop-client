@@ -44,6 +44,6 @@ case class SignalMessageSender(userId: String, password: String, deviceId: Int, 
 
 object SignalMessageSender {
   def apply(registration: Registration, store: SignalDesktopProtocolStore): SignalMessageSender = {
-    SignalMessageSender(registration.userName, registration.password, registration.deviceId, store)
+    new SignalMessageSender(registration.userName, registration.password, registration.deviceId, store)
   }
 }

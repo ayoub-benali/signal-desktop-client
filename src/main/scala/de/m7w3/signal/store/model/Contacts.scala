@@ -33,4 +33,10 @@ object Contacts {
   def insert(deviceContact: DeviceContact) = {
     contacts.insertOrUpdate(deviceContact)
   }
+
+  def contactsByName = {
+    contacts.sortBy(c => {
+      c.name.getOrElse(c.number)
+    }).result
+  }
 }

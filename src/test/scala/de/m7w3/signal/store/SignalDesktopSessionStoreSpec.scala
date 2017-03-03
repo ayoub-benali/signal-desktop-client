@@ -3,18 +3,35 @@ package de.m7w3.signal.store
 import de.m7w3.signal.store.model.Sessions
 import org.scalatest.{FlatSpec, Matchers}
 import org.whispersystems.libsignal.SignalProtocolAddress
+import org.whispersystems.libsignal.kdf.HKDF
+import org.whispersystems.libsignal.ratchet.ChainKey
 import org.whispersystems.libsignal.state.{SessionRecord, SessionState}
+import org.whispersystems.libsignal.util.KeyHelper
 import slick.driver.H2Driver.api._
 
 class SignalDesktopSessionStoreSpec extends FlatSpec with Matchers with TestStore {
 
   behavior of SignalDesktopSessionStore.getClass.getSimpleName
 
-  it should "contain stored sessions" in {
+  def createDummySession(): SessionState = {
+    val state = new SessionState()
+    val senderSigningKey = KeyHelper.generateSenderSigningKey()
+    val chainKey = new ChainKey(HKDF.createFor(3), Array.empty[Byte], 1)
+    state.setSenderChain(senderSigningKey, chainKey)
+    state
+  }
+
+  it should "contain stored sessions only if they have a senderChain" in {
     val session = new SessionRecord()
     val state = new SessionState()
     session.setState(state)
     session.archiveCurrentState()
+
+    protocolStore.storeSession(remoteAddress, session)
+    protocolStore.containsSession(remoteAddress) shouldBe false
+
+    val stateWithSenderChain = createDummySession()
+    session.setState(stateWithSenderChain)
 
     protocolStore.storeSession(remoteAddress, session)
     protocolStore.containsSession(remoteAddress) shouldBe true
@@ -75,9 +92,10 @@ class SignalDesktopSessionStoreSpec extends FlatSpec with Matchers with TestStor
 
     loadedSession shouldNot equal(secondLoadedSession)
 
+    val state = createDummySession()
     secondLoadedSession.archiveCurrentState()
     secondLoadedSession.getSessionState.setLocalIdentityKey(localIdentity.keyPair.getPublicKey)
-    secondLoadedSession.archiveCurrentState()
+    secondLoadedSession.setState(state)
     protocolStore.storeSession(remoteAddress, secondLoadedSession)
 
     val anotherLoadedSession = protocolStore.loadSession(remoteAddress)
@@ -89,7 +107,7 @@ class SignalDesktopSessionStoreSpec extends FlatSpec with Matchers with TestStor
     protocolStore.containsSession(remoteAddress) shouldBe false
 
     val session = new SessionRecord()
-    val state = new SessionState()
+    val state = createDummySession()
     session.setState(state)
 
     protocolStore.storeSession(remoteAddress, session)
@@ -97,6 +115,7 @@ class SignalDesktopSessionStoreSpec extends FlatSpec with Matchers with TestStor
 
     protocolStore.deleteSession(remoteAddress)
     protocolStore.containsSession(remoteAddress) shouldBe false
+    dbActionRunner.run(Sessions.exists(remoteAddress)) shouldBe false
   }
 
   it should "delete all sessions for a given sender name properly" in {
@@ -113,7 +132,10 @@ class SignalDesktopSessionStoreSpec extends FlatSpec with Matchers with TestStor
       }
     }
     addresses.foreach { address =>
-      protocolStore.storeSession(address, protocolStore.loadSession(address))
+      val session = protocolStore.loadSession(address)
+      val state = createDummySession()
+      session.setState(state)
+      protocolStore.storeSession(address, session)
     }
 
     protocolStore.deleteAllSessions(names.head)

@@ -3,6 +3,7 @@ import java.nio.file.Files
 import java.util
 
 import de.m7w3.signal.Logging
+import de.m7w3.signal.events.{ContactsSyncedEvent, EventPublisher, GroupsSyncedEvent}
 import de.m7w3.signal.store.SignalDesktopApplicationStore
 import org.whispersystems.signalservice.api.SignalServiceMessageReceiver
 import org.whispersystems.signalservice.api.messages.multidevice._
@@ -13,7 +14,8 @@ import scala.collection.JavaConverters.collectionAsScalaIterableConverter
 
 
 class SignalDesktopMessageHandler(signalDesktopApplicationStore: SignalDesktopApplicationStore,
-                                  messageReceiver: SignalServiceMessageReceiver) extends MessageHandler with Logging {
+                                  messageReceiver: SignalServiceMessageReceiver,
+                                  eventPublisher: EventPublisher) extends MessageHandler with Logging {
 
   //def handlePrekeyMessage()
 
@@ -32,6 +34,7 @@ class SignalDesktopMessageHandler(signalDesktopApplicationStore: SignalDesktopAp
     }
     val contactsStream = new DeviceContactsInputStream(iStream)
     processContacts(contactsStream)
+    eventPublisher.publishEvent(ContactsSyncedEvent)
   }
 
   @tailrec
@@ -58,6 +61,7 @@ class SignalDesktopMessageHandler(signalDesktopApplicationStore: SignalDesktopAp
     }
     val groupsStream = new DeviceGroupsInputStream(iStream)
     processGroups(groupsStream)
+    eventPublisher.publishEvent(GroupsSyncedEvent)
   }
 
   @tailrec
@@ -87,15 +91,20 @@ class SignalDesktopMessageHandler(signalDesktopApplicationStore: SignalDesktopAp
   override def handleSyncMessage(envelope: SignalServiceEnvelope, syncMessage: SignalServiceSyncMessage): Unit = {
     if (syncMessage.getBlockedList.isPresent) {
       handleBlockedList(envelope, syncMessage.getBlockedList.get())
-    } else if (syncMessage.getContacts.isPresent) {
+    }
+    if (syncMessage.getContacts.isPresent) {
       handleContacts(envelope, syncMessage.getContacts.get())
-    } else if (syncMessage.getGroups.isPresent) {
+    }
+    if (syncMessage.getGroups.isPresent) {
       handleGroups(envelope, syncMessage.getGroups.get())
-    } else if (syncMessage.getRead.isPresent) {
+    }
+    if (syncMessage.getRead.isPresent) {
       handleRead(envelope, syncMessage.getRead.get())
-    } else if (syncMessage.getRequest.isPresent) {
+    }
+    if (syncMessage.getRequest.isPresent) {
       handleRequest(envelope, syncMessage.getRequest.get())
-    } else if (syncMessage.getSent.isPresent) {
+    }
+    if (syncMessage.getSent.isPresent) {
       handleSent(envelope, syncMessage.getSent.get())
     }
   }

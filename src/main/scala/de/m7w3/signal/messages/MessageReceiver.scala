@@ -121,7 +121,9 @@ object MessageReceiver {
     )
     val messageHandler = new SignalDesktopMessageHandler(
       context.applicationStore,
-      signalMessageReceiver)
+      signalMessageReceiver,
+      context
+    )
     val signalServiceCipher = new SignalServiceCipher(new SignalServiceAddress(data.userName), context.protocolStore)
     MessageReceiver(
       signalServiceCipher,

@@ -5,6 +5,9 @@ import java.net.InetAddress
 
 import de.m7w3.signal._
 import de.m7w3.signal.account.AccountInitializationHelper
+import de.m7w3.signal.messages.DeviceSynchronization
+import monix.eval.Task
+import monix.execution.Scheduler
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -110,6 +113,11 @@ object DeviceRegistration{
           case Success(c) =>
             // app initialization
             ApplicationContext.initialize(c)
+
+            // do this after receiving started
+            // TODO: keep track of when last sync succeeded
+            DeviceSynchronization(c.account).requestSynchronization().runAsync(Scheduler.global)
+
             Platform.runLater {
               val root = MainView.load(c)
               this.getScene.setRoot(root)

@@ -9,7 +9,7 @@
 
 <HBox minHeight="64.0" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.m7w3.signal.controller.ChatEntryController">
    <children>
-      <ImageView fx:id="chatEntryImageView" fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true" />
+      <ImageView fx:id="chatEntryImageView" fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true" cache="true" />
       <VBox minHeight="64.0" maxWidth="200">
          <children>
             <Label fx:id="chatEntryNameLabel" text="ChatName">

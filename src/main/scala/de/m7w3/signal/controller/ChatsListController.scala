@@ -1,6 +1,7 @@
 package de.m7w3.signal.controller
 
 import java.net.URL
+import java.time.LocalDateTime
 
 import de.m7w3.signal.events.{ContactsSyncedEvent, GroupsSyncedEvent, SignalDesktopEvent, SimpleEventListener}
 import de.m7w3.signal.{ApplicationContext, Logging}
@@ -39,10 +40,14 @@ class ChatsListController(
   def reloadChats(): Unit = {
     Task {
       val groups = applicationContext.applicationStore.getGroups
-      val groupEntries = groups.map(ChatEntry.fromGroup)
+      val groupEntries = groups.map(g =>
+        GroupChatEntry(g, LastTextMessage(s"Hello ${g.group.name}", LocalDateTime.now().minusHours(1L)))
+      )
 
       val contacts = applicationContext.applicationStore.getContacts
-      val contactEntries = contacts.map(ChatEntry.fromContact)
+      val contactEntries = contacts.map(c =>
+        ContactChatEntry(c, LastTextMessage(s"Hello ${c.getName.or(c.getNumber)}", LocalDateTime.now().minusMinutes(30L)))
+      )
 
       val sortedEntries = (groupEntries ++ contactEntries).sorted(ChatEntry.descByLastMessageOrdering)
       chatEntries.setAll(sortedEntries.asJavaCollection)

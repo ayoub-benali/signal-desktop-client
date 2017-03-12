@@ -10,7 +10,7 @@ import org.whispersystems.signalservice.api.messages.multidevice._
 import org.whispersystems.signalservice.api.messages.{SignalServiceAttachment, SignalServiceDataMessage, SignalServiceEnvelope, SignalServiceGroup}
 import scala.annotation.tailrec
 import scala.collection.JavaConverters.collectionAsScalaIterableConverter
-import de.m7w3.signal.store.model.IncomingTextMessage
+import de.m7w3.signal.store.model.TextMessage
 
 class SignalDesktopMessageHandler(signalDesktopApplicationStore: SignalDesktopApplicationStore,
                                   messageReceiver: SignalServiceMessageReceiver,
@@ -144,12 +144,10 @@ class SignalDesktopMessageHandler(signalDesktopApplicationStore: SignalDesktopAp
     logger.debug(s"received textMessage message")
     val body = if(message.getBody().isPresent()) message.getBody().get() else ""
     val group = message.getGroupInfo()
-    val groupId = if (group.isPresent()) Some(group.get().getGroupId())
-    else None
+    val groupId = if (group.isPresent()) Some(group.get().getGroupId()) else None
 
-    val textMessage = IncomingTextMessage(body, envelope.getSource(), envelope.getSourceDevice(),
+    val textMessage = TextMessage(body, envelope.getSource(), envelope.getSourceDevice(),
       message.getTimestamp(), groupId)
-
     // textMessage = new IncomingEncryptedMessage(textMessage, body);
     // val  insertResult = database.insertMessageInbox(masterSecret, textMessage);
 

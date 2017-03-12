@@ -6,7 +6,7 @@ import de.m7w3.signal.{Constants, Logging}
 import de.m7w3.signal.store.SignalDesktopProtocolStore
 import de.m7w3.signal.store.model.Registration
 import org.whispersystems.libsignal.util.guava.Optional
-import org.whispersystems.signalservice.api.SignalServiceMessageSender
+import org.whispersystems.signalservice.api.{SignalServiceMessagePipe, SignalServiceMessageSender}
 import org.whispersystems.signalservice.api.crypto.UntrustedIdentityException
 import org.whispersystems.signalservice.api.messages.multidevice.SignalServiceSyncMessage
 
@@ -22,6 +22,7 @@ case class SignalMessageSender(userId: String, password: String, deviceId: Int, 
     deviceId,
     store,
     Constants.USER_AGENT,
+    Optional.absent[SignalServiceMessagePipe],
     Optional.absent[SignalServiceMessageSender.EventListener])
 
   @throws[IOException]

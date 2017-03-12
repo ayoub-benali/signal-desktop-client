@@ -35,6 +35,7 @@ class SignalDesktopMessageHandler(signalDesktopApplicationStore: SignalDesktopAp
     val contactsStream = new DeviceContactsInputStream(iStream)
     processContacts(contactsStream)
     eventPublisher.publishEvent(ContactsSyncedEvent)
+    ()
   }
 
   @tailrec
@@ -62,6 +63,7 @@ class SignalDesktopMessageHandler(signalDesktopApplicationStore: SignalDesktopAp
     val groupsStream = new DeviceGroupsInputStream(iStream)
     processGroups(groupsStream)
     eventPublisher.publishEvent(GroupsSyncedEvent)
+    ()
   }
 
   @tailrec

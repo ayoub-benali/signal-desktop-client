@@ -12,7 +12,7 @@ import org.whispersystems.signalservice.api.push.SignalServiceAddress
 import org.whispersystems.signalservice.api.{SignalServiceMessagePipe, SignalServiceMessageReceiver}
 
 import scala.annotation.tailrec
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, ExecutionContextExecutorService}
 
 /**
   * receives messages on a separate thread and hands them on to a message handler for further processing
@@ -24,9 +24,13 @@ case class MessageReceiver(cipher: SignalServiceCipher,
                            timeoutMillis: Long) extends Logging {
 
   val threadFactory = new ThreadFactory {
-    override def newThread(r: Runnable): Thread = new Thread(r, "signal-desktop-message-receiver")
+    override def newThread(r: Runnable): Thread = {
+      val t = new Thread(r, "signal-desktop-message-receiver")
+      t.setDaemon(false)
+      t
+    }
   }
-  val ec: ExecutionContext = ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(1, threadFactory))
+  val ec: ExecutionContextExecutorService = ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(1, threadFactory))
   val keepOnRockin: AtomicBoolean = new AtomicBoolean(true)
 
   logger.info("start receiving messages")
@@ -35,6 +39,11 @@ case class MessageReceiver(cipher: SignalServiceCipher,
       receiveMessages()
     }
   })
+
+  def close(): Unit = {
+    keepOnRockin.set(false)
+    ec.shutdown()
+  }
 
   def receiveMessages(): Unit = {
     val messagePipe = messageReceiver.createMessagePipe()

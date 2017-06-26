@@ -2,7 +2,7 @@ package de.m7w3.signal.store
 
 import de.m7w3.signal.store.model.{Contacts, Schema}
 import org.scalatest.{FlatSpec, Matchers}
-import slick.driver.H2Driver.api._
+import slick.jdbc.H2Profile.api._
 
 import scala.concurrent.duration._
 

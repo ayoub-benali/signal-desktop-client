@@ -5,7 +5,7 @@ import java.util
 import de.m7w3.signal.store.model.SignedPreKeys
 import org.whispersystems.libsignal.InvalidKeyIdException
 import org.whispersystems.libsignal.state.{SignedPreKeyRecord, SignedPreKeyStore}
-import slick.driver.H2Driver.api._
+import slick.jdbc.H2Profile.api._
 
 case class SignalDesktopSignedPreKeyStore(dbRunner: DBActionRunner) extends SignedPreKeyStore {
 

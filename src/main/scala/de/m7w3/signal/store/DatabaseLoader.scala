@@ -5,7 +5,7 @@ import java.nio.file.{Path, Paths}
 import de.m7w3.signal.exceptions.DatabaseDoesNotExistException
 import org.h2.api.ErrorCode
 import org.h2.jdbc.JdbcSQLException
-import slick.driver.H2Driver.api._
+import slick.jdbc.H2Profile.api._
 
 import scala.concurrent.Await
 import scala.concurrent.duration._

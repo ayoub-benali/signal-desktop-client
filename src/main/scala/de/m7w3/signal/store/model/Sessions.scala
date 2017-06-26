@@ -3,7 +3,7 @@ package de.m7w3.signal.store.model
 
 import org.whispersystems.libsignal.SignalProtocolAddress
 import org.whispersystems.libsignal.state.SessionRecord
-import slick.driver.H2Driver.api._
+import slick.jdbc.H2Profile.api._
 
 import scala.concurrent.ExecutionContext
 

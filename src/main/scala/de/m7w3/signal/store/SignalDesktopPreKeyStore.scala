@@ -3,7 +3,7 @@ package de.m7w3.signal.store
 import de.m7w3.signal.store.model.PreKeys
 import org.whispersystems.libsignal.InvalidKeyIdException
 import org.whispersystems.libsignal.state.{PreKeyRecord, PreKeyStore}
-import slick.driver.H2Driver.api._
+import slick.jdbc.H2Profile.api._
 
 case class SignalDesktopPreKeyStore(dbRunner: DBActionRunner) extends PreKeyStore {
 

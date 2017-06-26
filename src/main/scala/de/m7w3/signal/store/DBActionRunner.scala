@@ -1,17 +1,17 @@
 package de.m7w3.signal.store
 
 import de.m7w3.signal.Logging
-import slick.driver.H2Driver.api._
-import slick.profile.SqlAction
+import slick.jdbc.H2Profile.api._
+import slick.sql.SqlAction
 
 import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, ExecutionContext}
+import scala.concurrent.{Await, ExecutionContext, ExecutionContextExecutor}
 
 case class DBActionRunner(db: Database, timeout: Duration, verbose: Boolean = false) extends Logging {
 
-  implicit val ec = ExecutionContext.global
+  implicit val ec: ExecutionContextExecutor = ExecutionContext.global
 
-  def run[T](action: DBIOAction[T, NoStream, Nothing]) = {
+  def run[T](action: DBIOAction[T, NoStream, Nothing]): T = {
     if (verbose) {
       action match {
         case sqlAction: SqlAction[_, _, _] =>

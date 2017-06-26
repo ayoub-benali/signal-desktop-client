@@ -4,7 +4,7 @@ import java.nio.file.Files
 
 import de.m7w3.signal.exceptions.DatabaseDoesNotExistException
 import org.scalatest.{FlatSpec, Matchers}
-import slick.driver.H2Driver.api._
+import slick.jdbc.H2Profile.api._
 
 import scala.concurrent.Await
 import scala.concurrent.duration._

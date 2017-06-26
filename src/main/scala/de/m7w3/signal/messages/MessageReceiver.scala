@@ -55,26 +55,24 @@ case class MessageReceiver(cipher: SignalServiceCipher,
         logger.debug(s"received receipt from ${envelope.getSource}")
         // not handled yet, just an example, maybe we don't need an event here
         eventPublisher.publishEvent(ReceiptEvent.fromEnevelope(envelope))
-      } else {
-        if (envelope.isSignalMessage) {
-          logger.debug(s"got signalmessage from ${envelope.getSourceAddress.getNumber} ${envelope.getSourceDevice}")
-          // TODO: handle
-        }
+      } else if (envelope.isPreKeySignalMessage() || envelope.isSignalMessage()){
+        //TODO: check that recipient is not blocked
+        //TODO: send recipient
+
         val content = cipher.decrypt(envelope)
 
         if (content.getDataMessage.isPresent) {
           messageHandler.handleDataMessage(envelope, content.getDataMessage.get())
         } else if (content.getSyncMessage.isPresent) {
           messageHandler.handleSyncMessage(envelope, content.getSyncMessage.get())
-        } else {
-          logger.debug("no content in received message")
-        }
-
-        // do this after decryption
-        if (envelope.isPreKeySignalMessage) {
+        } else if (envelope.isPreKeySignalMessage) {
           logger.debug("received prekey signal message")
           eventPublisher.publishEvent(PreKeyEvent(envelope, content))
+        } else {
+          logger.warn("Got unrecognized message...")
         }
+      } else{
+        logger.error(s"Received envelope of unknown type: ${envelope.getType()}")
       }
 
     } catch {

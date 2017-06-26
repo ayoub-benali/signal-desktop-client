@@ -24,7 +24,7 @@ addCompilerPlugin("org.scalamacros" %% "paradise" % "2.1.1" cross CrossVersion.f
 resolvers += "jitpack" at "https://jitpack.io"
 
 libraryDependencies ++= Seq(
-  "com.github.turasa"         % "signal-service-java"  % "2.4.4_unofficial_1",
+  "com.github.turasa"         % "signal-service-java"  % "2.5.1_unofficial_1",
   "com.github.kenglxn.QRGen"  % "javase"               % "2.2.0",
   "org.bouncycastle"          % "bcprov-jdk16"         % "1.46",
   "com.github.scopt"          %% "scopt"               % "3.6.0",

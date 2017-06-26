@@ -101,6 +101,10 @@ object ApplicationContext {
     implicit val scheduler = Scheduler.global
 
     current.set(Some(applicationContext))
+    // TODO: make MessageReceiver an argument to ApplicationContext
+    // so we can close it when the appCtx is closed
+    // also initialize the receiver from the same pipe as the message sender
+    // to issue commands over a websocket connection
     MessageReceiver.initialize(applicationContext)
     Listeners.initialize(applicationContext)
   }

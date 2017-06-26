@@ -1,6 +1,6 @@
 package de.m7w3.signal.store.model
 
-import slick.driver.H2Driver.api._
+import slick.jdbc.H2Profile.api._
 
 object Schema {
   val schema = Addresses.addresses.schema ++

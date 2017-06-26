@@ -2,7 +2,7 @@ package de.m7w3.signal.store.model
 
 
 import org.whispersystems.libsignal.SignalProtocolAddress
-import slick.driver.H2Driver.api._
+import slick.jdbc.H2Profile.api._
 
 case class Address(id: Int, signalAddress: SignalProtocolAddress)
 

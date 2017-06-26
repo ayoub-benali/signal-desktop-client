@@ -7,7 +7,7 @@ import org.whispersystems.libsignal.kdf.HKDF
 import org.whispersystems.libsignal.ratchet.ChainKey
 import org.whispersystems.libsignal.state.{SessionRecord, SessionState}
 import org.whispersystems.libsignal.util.KeyHelper
-import slick.driver.H2Driver.api._
+import slick.jdbc.H2Profile.api._
 
 class SignalDesktopSessionStoreSpec extends FlatSpec with Matchers with TestStore {
 

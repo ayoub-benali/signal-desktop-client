@@ -2,7 +2,7 @@ package de.m7w3.signal.store.model
 
 import org.whispersystems.libsignal.util.guava.Optional
 import org.whispersystems.signalservice.api.messages.multidevice.DeviceContact
-import slick.driver.H2Driver.api._
+import slick.jdbc.H2Profile.api._
 import slick.lifted.ProvenShape
 
 class Contacts(tag: Tag) extends Table[DeviceContact](tag, "CONTACTS") {

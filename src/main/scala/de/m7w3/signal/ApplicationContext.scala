@@ -9,7 +9,7 @@ import monix.execution.Scheduler
 import monix.execution.atomic.Atomic
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.core.config.Configurator
-import slick.driver.H2Driver.api._
+import slick.jdbc.H2Profile.api._
 
 import scala.util.Try
 

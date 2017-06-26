@@ -2,7 +2,7 @@ package de.m7w3.signal.store.model
 
 import org.whispersystems.libsignal.state.PreKeyRecord
 import org.whispersystems.libsignal.util.Medium
-import slick.driver.H2Driver.api._
+import slick.jdbc.H2Profile.api._
 
 class PreKeys(tag: Tag) extends Table[PreKeyRecord](tag, "PRE_KEYS") {
 

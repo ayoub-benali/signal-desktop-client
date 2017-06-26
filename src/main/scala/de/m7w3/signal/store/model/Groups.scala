@@ -3,7 +3,7 @@ import java.util
 
 import de.m7w3.signal.store.DBActionRunner
 import org.whispersystems.signalservice.api.messages.multidevice.DeviceGroup
-import slick.driver.H2Driver.api._
+import slick.jdbc.H2Profile.api._
 
 import scala.collection.JavaConverters.collectionAsScalaIterableConverter
 

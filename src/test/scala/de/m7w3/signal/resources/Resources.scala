@@ -2,7 +2,7 @@ package de.m7w3.signal.resources
 
 import de.m7w3.signal.store.{DBActionRunner, SignalDesktopApplicationStore, SignalDesktopProtocolStore}
 import de.m7w3.signal.store.model.Schema
-import slick.driver.H2Driver.api._
+import slick.jdbc.H2Profile.api._
 
 import scala.concurrent.duration._
 
